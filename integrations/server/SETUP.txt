@@ -1,0 +1,107 @@
+Proskurnin TV — API-сервисы. Состояние на 8 ноября 2026
+
+ОБЛАСТЬ ДЕЙСТВИЯ
+Только API нашего лаунчера: погода, счётчик канала, AI, карточки фильмов.
+Happ/VPN, SmartTube/YouTube, Google Play, системный Google-аккаунт и видео
+не маршрутизируются этими настройками. Сетевые настройки ТВ не менялись.
+
+МАРШРУТЫ
+OpenAI и YouTube Data API: ТВ -> HTTPS ru01.firstvds.proskurn.in
+(188.120.240.175) -> фиксированный SSH-канал -> обработчик 40.160.252.24.
+Это не SOCKS-прокси и не VPN. Доступны только именованные операции.
+TMDB и постеры: наш RU -> поставщик; при отказе RU -> US -> поставщик.
+Прямые подключения ТВ к API TMDB и image.tmdb.org отклонены при проверке.
+Open-Meteo: RU. wttr.in: напрямую с ТВ, резерв RU. См. WEATHER_API.txt.
+ЦБ и Coinbase: напрямую с ТВ, через обычную сеть Android.
+Прямой маршрут не обходит отдельно включённый пользователем VPN.
+
+КОНФИГУРАЦИЯ
+private/api-keys.env: локальный файл 0600, каталог 0700, вне Git.
+*_API_ROUTE: direct / ru / us. *_API_FALLBACK_ROUTE: резерв.
+API_RU_RELAY_IP=188.120.240.175; API_US_WORKER_IP=40.160.252.24.
+Для direct не нужно указывать IP ТВ или роутера.
+Каждый погодный поставщик имеет собственный маршрут.
+Проверка наличия ключей без вывода: python3 integrations/server/settings.py
+Загрузчик не исполняет env как shell. Не использовать source.
+Редактирование env само по себе НЕ меняет работающие сервисы.
+
+КЛЮЧИ
+OpenAI и YouTube API — в /etc/proskurnin-worker/api.json на US (0640).
+TMDB — в конфигурациях API RU и US (0640), отсутствует в текущем APK.
+Ранее переданный TV ключ TMDB заменён файлом только с именами маршрутов.
+TV хранит лишь отдельный ключ доступа к нашему API в закрытом каталоге
+/data/user/0/local.proskurnin.preview/files/api-client.json (0600).
+Это не ключ поставщика. Погодный ключ отдельный.
+TMDB legacy v3 api_key поддерживается; это не Bearer Read Access Token.
+
+СЧЁТЧИК YOUTUBE
+Настройки лаунчера -> Счётчик YouTube -> включение / интервал 5/10/15/30/60 мин.
+Только общий публичный счётчик @ProskurninLife. Недельного прироста нет.
+YouTube округляет публичное число до трёх значащих цифр. Значок ≈ обязателен.
+Кэш до суток, пометка сохранённых данных. Обновление только на Home.
+Перезапуск процесса не сбрасывает ограничение интервала.
+Google OAuth для общего счётчика не требуется.
+
+AI-ПОДБОР
+Звёздочка в верхней строке. Текст -> OpenAI gpt-4.1-mini на US -> проверка
+реальных фильмов по TMDB, жанрам/отрицаниям, длительности и языку оригинала.
+Кандидаты модели не показываются без проверки. При необходимости TMDB Discover.
+Три карточки, постеры небольшого размера; последние результаты кэшируются сутки.
+Кинотеатры выбираются пользователем. Открывается приложение кинотеатра;
+наличие фильма и русской озвучки не гарантируется, deep links не заявлены.
+Проверка прошивки не обнаружила доступного SpeechRecognizer/распознавателя Intent.
+Пока доступен ввод текста. Кнопка голосового ассистента не переназначена.
+Лимит 50 новых AI-запросов в сутки UTC, пауза минимум 8 секунд, кэш не расходует
+новый запрос. store=false, текст запросов не пишется в серверный журнал.
+Отключение: Настройки -> AI-подбор -> выкл. Секреты остаются вне APK.
+
+GOOGLE OAUTH
+JSON с корнем installed НЕ доказывает тип Desktop. Текущий клиент — устройство,
+для него localhost flow отклонён Google (400 invalid_request).
+Использовать: python3 integrations/server/google_oauth_device.py
+Код показывается только на временной странице 127.0.0.1 на Mac; не в чате.
+Запрос кодов/обмен/проверка канала идут на US. Доступ — только youtube.readonly.
+Владелец самостоятельно вводит код на сайте Google и подтверждает доступ.
+При 403 «только одобренные тестировщики»: Google Auth Platform -> Audience ->
+Test users -> добавить свой аккаунт канала в проект proskurnin-tv.
+Токены после подтверждения правильного канала сохраняются только на US:
+/var/lib/proskurnin-worker/oauth-token.json (0600, tv-api-worker).
+В режиме Testing разрешение/refresh token для этого scope истекают через 7 дней.
+OAuth завершён: канал подтверждён, scope youtube.readonly, чтение публичных
+подписчиков проверено HTTP 200. Проверка токена: reports/api-integration-v1/oauth-checks.jsonl.
+Доступны лишь публичные подписчики, события могут задерживаться. Реальные
+события/конфетти ещё не подключены; наличие OAuth-файла само по себе их не включает.
+
+ОТКЛЮЧЕНИЕ И ВОЗВРАТ
+Сначала выключить AI-подбор и Счётчик YouTube в настройках лаунчера.
+План серверного отключения (ничего не меняет):
+  python3 integrations/server/rollback_api.py
+Выполнить отключение только новых сервисов и их SSH-доступа:
+  python3 integrations/server/rollback_api.py --apply
+Погода, другие сайты nginx, VPN и Home останутся как были.
+Конфигурации сохраняются. Восстановление API:
+  python3 integrations/server/deploy_api.py
+  python3 scripts/provision-tv-api.py
+Для отзыва OAuth: https://myaccount.google.com/connections -> Proskurnin TV ->
+удалить доступ. Это не удаляет Google-аккаунт с ТВ. Удаление локального файла
+токенов само по себе не отзывает доступ в Google.
+Отзыв API-ключей: Google Cloud -> APIs & Services -> Credentials;
+OpenAI -> https://platform.openai.com/api-keys; TMDB -> Settings -> API.
+После отзыва обновить private/api-keys.env и развёртывание.
+Старый APK/исходники 1.14: reports/api-integration-v1/before/.
+Для возврата оформления без удаления пользовательских данных собрать сохранённые
+исходники с versionCode выше текущего и установить adb install -r.
+
+ПРОВЕРКИ И ОГРАНИЧЕНИЯ
+Серверные отчёты: reports/api-integration-v1/.
+Проверены ключи, публичный счётчик, AI-ответ, отсутствие US -> контролируемая 503,
+восстановление SSH-канала, отклонение чужого device key и параметров запроса.
+TMDB через HTTPS RU с выходом US возвращает метаданные и JPEG.
+Сон/пробуждение и перезагрузка ТВ в рамках этого этапа ещё не проверены.
+
+ИСТОЧНИКИ
+https://developers.google.com/identity/protocols/oauth2/limited-input-device
+https://support.google.com/cloud/answer/15549945
+https://developers.google.com/identity/protocols/oauth2
+https://developers.google.com/youtube/data/reference/rest/v3/channels
+https://developer.themoviedb.org/docs/authentication-application

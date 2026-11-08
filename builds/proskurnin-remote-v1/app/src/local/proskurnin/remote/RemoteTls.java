@@ -1,0 +1,6 @@
+package local.proskurnin.remote;
+import android.content.Context;import javax.net.ssl.*;import java.security.*;import java.io.*;
+final class RemoteTls {
+ static SSLServerSocket server(Context c)throws Exception{File dir=c.getFilesDir();String pass=new String(read(new File(dir,"tls-password"),128),"UTF-8").trim();KeyStore keys=KeyStore.getInstance("PKCS12");try(InputStream in=new FileInputStream(new File(dir,"remote.p12"))){keys.load(in,pass.toCharArray());}KeyManagerFactory km=KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());km.init(keys,pass.toCharArray());SSLContext context=SSLContext.getInstance("TLS");context.init(km.getKeyManagers(),null,new SecureRandom());SSLServerSocket server=(SSLServerSocket)context.getServerSocketFactory().createServerSocket();server.setEnabledProtocols(new String[]{"TLSv1.2"});return server;}
+ static byte[] read(File file,int limit)throws Exception{if(file.length()>limit)throw new IOException();try(InputStream in=new FileInputStream(file);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(out.size()+n>limit)throw new IOException();out.write(b,0,n);}return out.toByteArray();}}
+}

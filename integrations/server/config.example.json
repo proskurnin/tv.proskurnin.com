@@ -1,0 +1,79 @@
+{
+  "youtube": {
+    "enabled": false,
+    "handle": "@ProskurninLife",
+    "poll_seconds": 300,
+    "minimum_poll_seconds": 300,
+    "weekly_growth": false,
+    "oauth_client_file": "private/oauth-client.json",
+    "oauth_token_file": "/var/lib/proskurnin-worker/oauth-token.json",
+    "api_key_env": "YOUTUBE_API_KEY",
+    "api_route_env": "YOUTUBE_DATA_API_ROUTE",
+    "oauth_api_route_env": "GOOGLE_OAUTH_API_ROUTE",
+    "oauth_flow": "device"
+  },
+  "subscriber_effect": {
+    "enabled": false,
+    "demo": false,
+    "duration_seconds": 8,
+    "max_queue": 3,
+    "foreground_launcher_only": true
+  },
+  "movies": {
+    "enabled": false,
+    "providers": [
+      "Кинопоиск",
+      "Иви",
+      "ОККО",
+      "Премьер",
+      "Zona",
+      "LazyMedia",
+      "Кион"
+    ],
+    "allow_external_audio": true,
+    "allow_external_text": true,
+    "allow_paid_api": true,
+    "tmdb_key_env": "TMDB_READ_ACCESS_TOKEN",
+    "ai_key_env": "OPENAI_API_KEY",
+    "tmdb_api_route_env": "TMDB_API_ROUTE",
+    "ai_api_route_env": "OPENAI_API_ROUTE",
+    "tmdb_api_fallback_route_env": "TMDB_API_FALLBACK_ROUTE"
+  },
+  "remote": {
+    "enabled": false,
+    "lan_only": true,
+    "pairing_ttl_seconds": 120,
+    "pairing_attempts": 5
+  },
+  "credentials_env": "private/api-keys.env",
+  "weather": {
+    "enabled": false,
+    "providers_env": "WEATHER_PROVIDERS",
+    "cache_seconds_env": "WEATHER_CACHE_SECONDS",
+    "default_providers": [
+      "open_meteo",
+      "wttr"
+    ],
+    "default_cache_seconds": 1800,
+    "api_key_required": false,
+    "api_route_envs": {
+      "open_meteo": "OPEN_METEO_API_ROUTE",
+      "wttr": "WTTR_API_ROUTE"
+    },
+    "api_fallback_route_envs": {
+      "wttr": "WTTR_API_FALLBACK_ROUTE"
+    }
+  },
+  "rates": {
+    "enabled": false,
+    "api_route_envs": {
+      "cbr": "CBR_API_ROUTE",
+      "coinbase": "COINBASE_API_ROUTE"
+    }
+  },
+  "api_scope": "Only launcher API adapters; no VPN, OS, apps or video traffic",
+  "api_server_envs": {
+    "ru": "API_RU_RELAY_IP",
+    "us": "API_US_WORKER_IP"
+  }
+}

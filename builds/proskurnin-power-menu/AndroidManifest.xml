@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.proskurnin.powermenu" android:versionCode="1" android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="28" />
+    <overlay android:targetPackage="android" android:priority="900" android:isStatic="true" />
+    <application android:label="Proskurnin TV — штатное меню питания" android:hasCode="false" android:allowBackup="false" />
+</manifest>

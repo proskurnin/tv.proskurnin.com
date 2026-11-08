@@ -1,0 +1,17 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.proskurnin.homerouter" android:versionCode="2" android:versionName="1.1">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="28" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <application android:label="Proskurnin TV — системный Home" android:allowBackup="false">
+        <activity android:name=".HomeActivity" android:exported="true" android:excludeFromRecents="true" android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter android:priority="3">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.ALL_APPS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

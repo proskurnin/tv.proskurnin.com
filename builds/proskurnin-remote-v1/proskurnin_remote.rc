@@ -1,0 +1,9 @@
+service proskurnin_remote /system/bin/app_process -Djava.class.path=/vendor/etc/proskurnin-remote/input-bridge.jar /system/bin local.proskurnin.remote.InputBridge
+    class late_start
+    user shell
+    group shell input
+    seclabel u:r:shell:s0
+    disabled
+
+on property:sys.boot_completed=1
+    start proskurnin_remote

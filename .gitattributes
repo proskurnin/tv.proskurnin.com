@@ -1,0 +1,3 @@
+# Preserve vendored Nayuki QR sources and their original license formatting.
+builds/*/app/src/io/nayuki/** -whitespace
+builds/*/app/assets/QR-CODE-LICENSE.txt -whitespace

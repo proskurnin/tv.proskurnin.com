@@ -1,0 +1,5 @@
+<resources>
+    <!-- Android 9 PhoneWindowManager: 1 = GLOBAL_ACTIONS, 2 = SHUT_OFF.
+         This vendor's ShutdownThread ignores SHUT_OFF with default EnableSTR=true. -->
+    <integer name="config_longPressOnPowerBehavior">1</integer>
+</resources>
