@@ -1,0 +1,9 @@
+service proskurnin_power /system/bin/app_process -Djava.class.path=/vendor/etc/proskurnin-power/power-bridge.jar /system/bin local.proskurnin.power.PowerBridge
+    class late_start
+    user root
+    group root system shell log
+    seclabel u:r:su:s0
+    disabled
+
+on property:sys.boot_completed=1
+    start proskurnin_power

@@ -54,3 +54,7 @@
 **/api-client.json
 !/builds/proskurnin-power-menu/AndroidManifest.xml
 !/.gitattributes
+
+!/builds/proskurnin-power-actions/
+!/builds/proskurnin-power-actions/src/
+!/builds/proskurnin-power-actions/proskurnin_power.rc

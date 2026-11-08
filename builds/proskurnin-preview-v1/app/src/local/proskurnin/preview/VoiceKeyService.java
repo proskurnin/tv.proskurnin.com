@@ -2,7 +2,8 @@ package local.proskurnin.preview;
 import android.accessibilityservice.AccessibilityService;import android.view.accessibility.AccessibilityEvent;import android.view.KeyEvent;import android.content.*;import android.os.*;
 /** Assistant and explicitly learned app buttons. No screen reading; Home/Power pass through. */
 public class VoiceKeyService extends AccessibilityService {
- AppKeyController appKeys;boolean systemDialog;
+ AppKeyController appKeys;boolean systemDialog;static VoiceKeyService current;boolean powerPending;long lastPowerMenu;
+ static boolean takeScreenshot(){return current!=null&&current.performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);}
  final BroadcastReceiver windowReturn=new BroadcastReceiver(){public void onReceive(Context c,Intent i){if(systemDialog&&i.getBooleanExtra("application_focused",false))updateKeyFilter(false);}};
  @Override public void onCreate(){super.onCreate();appKeys=new AppKeyController(this);registerReceiver(windowReturn,new IntentFilter("local.proskurnin.preview.APP_WINDOW_FOCUSED"),"local.proskurnin.permission.REMOTE_AI",null);}
  final Handler h=new Handler();boolean down,longPress;int activeKey=-1;long started;boolean pendingShort;
@@ -16,7 +17,7 @@ public class VoiceKeyService extends AccessibilityService {
  }
  void open(boolean dialog){if(!getSharedPreferences("preview",0).getBoolean("ai_enabled",true)||!getSharedPreferences("preview",0).getBoolean("voice_key_enabled",true))return;try{Intent intent=new Intent(this,dialog?AssistantActivity.class:MovieActivity.class).putExtra("auto_voice",true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(intent);android.util.Log.i("ProskurninVoiceKey",dialog?"launch=dialog":"launch=movies");}catch(Exception e){android.util.Log.w("ProskurninVoiceKey","launch failed");}}
  void reset(){h.removeCallbacks(hold);h.removeCallbacks(watchdog);down=false;longPress=false;activeKey=-1;}
- @Override protected void onServiceConnected(){super.onServiceConnected();updateKeyFilter(false);}
+ @Override protected void onServiceConnected(){super.onServiceConnected();current=this;updateKeyFilter(false);}
  void updateKeyFilter(boolean suspend){
   android.accessibilityservice.AccessibilityServiceInfo info=getServiceInfo();if(info==null)return;
   int flag=android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
@@ -24,6 +25,8 @@ public class VoiceKeyService extends AccessibilityService {
   if(flags!=info.flags){onInterrupt();info.flags=flags;setServiceInfo(info);android.util.Log.i("ProskurninVoiceKey",suspend?"System dialog: key filter suspended":"App window: key filter restored");}
   systemDialog=suspend;
  }
- public void onAccessibilityEvent(AccessibilityEvent e){if(e.getEventType()!=AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)return;String pkg=e.getPackageName()==null?null:e.getPackageName().toString(),cls=e.getClassName()==null?null:e.getClassName().toString();if("com.android.systemui".equals(pkg))android.util.Log.i("ProskurninVoiceKey","System window class="+cls);updateKeyFilter(SystemDialogKeys.suspended(systemDialog,pkg,cls));}
- public void onInterrupt(){if(appKeys!=null)appKeys.clear();reset();h.removeCallbacks(single);pendingShort=false;}public void onDestroy(){unregisterReceiver(windowReturn);onInterrupt();if(appKeys!=null)appKeys.close();super.onDestroy();}
+ public void onAccessibilityEvent(AccessibilityEvent e){if(e.getEventType()!=AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)return;String pkg=e.getPackageName()==null?null:e.getPackageName().toString(),cls=e.getClassName()==null?null:e.getClassName().toString();if("com.android.systemui".equals(pkg))android.util.Log.i("ProskurninVoiceKey","System window class="+cls);updateKeyFilter(SystemDialogKeys.suspended(systemDialog,pkg,cls));
+ if("com.android.systemui".equals(pkg)&&"com.android.systemui.globalactions.GlobalActionsDialog$ActionsDialog".equals(cls)&&getSharedPreferences("preview",0).getBoolean("power_menu",false)&&!powerPending&&SystemClock.elapsedRealtime()-lastPowerMenu>1500){powerPending=true;new Thread(()->{boolean ready="READY".equals(PowerControl.request("PING"));h.post(()->{powerPending=false;if(!ready||!systemDialog)return;lastPowerMenu=SystemClock.elapsedRealtime();sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));startActivity(new Intent(this,PowerMenuActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));});},"power-check").start();}
+ }
+ public void onInterrupt(){if(appKeys!=null)appKeys.clear();reset();h.removeCallbacks(single);pendingShort=false;}public void onDestroy(){if(current==this)current=null;unregisterReceiver(windowReturn);onInterrupt();if(appKeys!=null)appKeys.close();super.onDestroy();}
 }
