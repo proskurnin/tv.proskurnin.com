@@ -11,14 +11,15 @@ spec=importlib.util.spec_from_file_location('boot_v4',Path(__file__).resolve().p
 boot=importlib.util.module_from_spec(spec);spec.loader.exec_module(boot)
 
 class BootBrandingTest(unittest.TestCase):
+    boot = boot
     def setUp(self):
         self.original=bytes(range(256))*12288
         self.digest=hashlib.sha256(self.original).hexdigest()
         self.jpg=b'\xff\xd8'+b'example'*4000+b'\xff\xd9'
 
     def test_only_logo_and_two_checksums_change(self):
-        with patch.object(boot,'SOURCE_SHA',self.digest):
-            result=boot.candidate(self.original,self.jpg)
+        with patch.object(self.boot,'SOURCE_SHA',self.digest):
+            result=self.boot.candidate(self.original,self.jpg)
         self.assertEqual(len(result),len(self.original))
         self.assertEqual(result[49664:],self.original[49664:])
         self.assertEqual(result[:8],self.original[:8])
@@ -28,13 +29,20 @@ class BootBrandingTest(unittest.TestCase):
         self.assertEqual(struct.unpack_from('<I',result,240)[0],zlib.crc32(result[:240]))
 
     def test_changed_snapshot_is_rejected(self):
-        with patch.object(boot,'SOURCE_SHA',self.digest):
-            with self.assertRaises(ValueError):boot.candidate(b'X'+self.original[1:],self.jpg)
-            with self.assertRaises(ValueError):boot.candidate(self.original[:-1],self.jpg)
+        with patch.object(self.boot,'SOURCE_SHA',self.digest):
+            with self.assertRaises(ValueError):self.boot.candidate(b'X'+self.original[1:],self.jpg)
+            with self.assertRaises(ValueError):self.boot.candidate(self.original[:-1],self.jpg)
 
     def test_oversized_or_incomplete_jpeg_is_rejected(self):
-        with patch.object(boot,'SOURCE_SHA',self.digest):
+        with patch.object(self.boot,'SOURCE_SHA',self.digest):
             for bad in (b'\xff\xd8'+bytes(49420)+b'\xff\xd9',self.jpg[:-2],b'not jpeg'):
-                with self.assertRaises(ValueError):boot.candidate(self.original,bad)
+                with self.assertRaises(ValueError):self.boot.candidate(self.original,bad)
+
+
+class WhiteBootBrandingTest(BootBrandingTest):
+    def setUp(self):
+        super().setUp()
+        spec=importlib.util.spec_from_file_location('boot_v5',Path(__file__).resolve().parents[1]/'scripts/install-proskurnin-boot-v5.py')
+        self.boot=importlib.util.module_from_spec(spec);spec.loader.exec_module(self.boot)
 
 if __name__=='__main__':unittest.main()

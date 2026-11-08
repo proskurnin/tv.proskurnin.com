@@ -72,6 +72,11 @@ final class AppArrangement {
         return to;
     }
 
+    /** Same six-column reorder operation on Home, the app drawer and Other. */
+    static int reorder(ArrayList<String> list, int index, int key) {
+        return move(list, index, next(index, list.size(), key, LIMIT));
+    }
+
     static int next(int index, int count, int key, int columns) {
         if (count <= 0) return 0;
         if (key == 21 && index % columns > 0) return index - 1;

@@ -27,6 +27,16 @@ public final class AppArrangementTest {
   check(!a.pin("missing",0));
   for(int count=0;count<=6;count++){float width=count*260+Math.max(0,count-1)*25;check(AppArrangement.homeLeft(count)*2+width==1920);}
   eq(AppArrangement.next(5,8,20,6),7);eq(AppArrangement.next(7,8,19,6),1);eq(AppArrangement.next(5,8,22,6),5);eq(AppArrangement.next(0,0,20,6),0);
+  // Home uses exactly the same reorder operation as the drawer: 1–6 favorites.
+  for(int count=1;count<=6;count++){
+   ArrayList<String> favorites=new ArrayList<>(list("a","b","c","d","e","f").subList(0,count));
+   ArrayList<String> before=new ArrayList<>(favorites);
+   int pos=AppArrangement.reorder(favorites,0,22);eq(pos,count>1?1:0);eq(favorites.get(pos),"a");
+   eq(AppArrangement.reorder(favorites,pos,19),pos);eq(AppArrangement.reorder(favorites,pos,20),pos);
+   eq(AppArrangement.reorder(favorites,pos,21),0);eq(favorites,before);pos=0;
+   for(int step=0;step<8;step++)pos=AppArrangement.reorder(favorites,pos,22);
+   eq(pos,count-1);eq(favorites.get(pos),"a");
+  }
   // Long sequences keep the three lists disjoint and never exceed the home limit.
   Random random=new Random(133);for(int n=0;n<2000;n++){String pkg=installed.get(random.nextInt(installed.size()));switch(random.nextInt(5)){case 0:a.pin(pkg,random.nextInt(8)-1);break;case 1:a.hide(pkg,null);break;case 2:a.restore(pkg);break;case 3:a.unpin(pkg);break;default:AppArrangement.move(a.apps,0,random.nextInt(20));}invariant(a,installed);}
   System.out.println("AppArrangement: migration, replacement, folder, cancel, empty home, uninstall, focus, centering and 2000 mixed operations passed");
