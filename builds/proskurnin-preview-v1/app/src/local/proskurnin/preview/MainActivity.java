@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
   if(!nativeHome()){items.add("Резервный автозапуск: "+(prefs.getBoolean("boot_home",true)?"вкл":"выкл"));items.add("Обработка кнопки Home");}
   final int chartIndex=items.size();items.add("Графики валют за 7 дней: "+(prefs.getBoolean("rates_chart",true)?"вкл":"выкл"));
   new AlertDialog.Builder(this).setCustomTitle(versionTitle("Оформление экрана")).setItems(items.toArray(new String[0]),(d,n)->{
-   if(n==chartIndex){boolean on=!prefs.getBoolean("rates_chart",true);prefs.edit().putBoolean("rates_chart",on).apply();if(on){ratesAttempt=0;fetchRates();}screen.invalidate();return;}
+   if(n==chartIndex){boolean on=!prefs.getBoolean("rates_chart",true);prefs.edit().putBoolean("rates_chart",on).apply();if(on){SharedPreferences.Editor retry=prefs.edit();for(String k:prefs.getAll().keySet())if(k.startsWith("attempt_history_")&&!prefs.contains(k.substring(8))||k.startsWith("history_attempt_CBR_"))retry.remove(k);retry.apply();ratesAttempt=0;fetchRates();}screen.invalidate();return;}
    if(n==3){openIntent(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(new ComponentName("com.google.android.tvlauncher","com.google.android.tvlauncher.MainActivity")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));return;}
    if(n==4){prefs.edit().putBoolean("boot_home",!prefs.getBoolean("boot_home",true)).apply();return;}
    if(n==5){openIntent(new Intent("android.settings.ACCESSIBILITY_SETTINGS"));return;}
