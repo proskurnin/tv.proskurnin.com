@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Device-specific Android 9 SystemUI overlay. Only changes focus traversal order.
+     SystemUI resource names and structure verified on this TV, not portable blindly. -->
+<com.android.systemui.HardwareUiLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ android:theme="@*com.android.systemui:style/qs_theme"
+ android:paddingTop="@*com.android.systemui:dimen/global_actions_top_padding"
+ android:clipChildren="false" android:clipToPadding="false"
+ android:layout_width="match_parent" android:layout_height="match_parent"
+ android:layout_marginBottom="0dp" android:descendantFocusability="afterDescendants">
+ <LinearLayout android:id="@android:id/list" android:gravity="center"
+  android:layout_gravity="top|right" android:orientation="vertical" android:padding="12dp"
+  android:layout_width="@*com.android.systemui:dimen/global_actions_panel_width"
+  android:layout_height="wrap_content" android:translationZ="9dp"
+  android:descendantFocusability="afterDescendants"/>
+</com.android.systemui.HardwareUiLayout>

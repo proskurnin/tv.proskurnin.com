@@ -17,6 +17,7 @@
 !/builds/proskurnin-remote-v1/
 !/builds/proskurnin-home-router/
 !/builds/proskurnin-power-menu/
+!/builds/proskurnin-power-focus/
 /builds/*/*
 !/builds/proskurnin-preview-v1/app/
 !/builds/proskurnin-remote-v1/app/
@@ -24,6 +25,8 @@
 !/builds/proskurnin-remote-v1/proskurnin_remote.rc
 !/builds/proskurnin-home-router/app/
 !/builds/proskurnin-power-menu/res/
+!/builds/proskurnin-power-focus/res/
+!/builds/proskurnin-power-focus/AndroidManifest.xml
 !/integrations/
 /integrations/*
 !/integrations/server/
