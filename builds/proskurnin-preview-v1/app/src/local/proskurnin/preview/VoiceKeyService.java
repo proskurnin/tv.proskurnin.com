@@ -2,8 +2,9 @@ package local.proskurnin.preview;
 import android.accessibilityservice.AccessibilityService;import android.view.accessibility.AccessibilityEvent;import android.view.KeyEvent;import android.content.*;import android.os.*;
 /** Assistant and explicitly learned app buttons. No screen reading; Home/Power pass through. */
 public class VoiceKeyService extends AccessibilityService {
- AppKeyController appKeys;
- @Override public void onCreate(){super.onCreate();appKeys=new AppKeyController(this);}
+ AppKeyController appKeys;boolean systemDialog;
+ final BroadcastReceiver windowReturn=new BroadcastReceiver(){public void onReceive(Context c,Intent i){if(systemDialog&&i.getBooleanExtra("application_focused",false))updateKeyFilter(false);}};
+ @Override public void onCreate(){super.onCreate();appKeys=new AppKeyController(this);registerReceiver(windowReturn,new IntentFilter("local.proskurnin.preview.APP_WINDOW_FOCUSED"),"local.proskurnin.permission.REMOTE_AI",null);}
  final Handler h=new Handler();boolean down,longPress;int activeKey=-1;long started;boolean pendingShort;
  final Runnable single=()->{pendingShort=false;open(false);};
  final Runnable hold=()->{if(down)longPress=true;};
@@ -15,5 +16,14 @@ public class VoiceKeyService extends AccessibilityService {
  }
  void open(boolean dialog){if(!getSharedPreferences("preview",0).getBoolean("ai_enabled",true)||!getSharedPreferences("preview",0).getBoolean("voice_key_enabled",true))return;try{Intent intent=new Intent(this,dialog?AssistantActivity.class:MovieActivity.class).putExtra("auto_voice",true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(intent);android.util.Log.i("ProskurninVoiceKey",dialog?"launch=dialog":"launch=movies");}catch(Exception e){android.util.Log.w("ProskurninVoiceKey","launch failed");}}
  void reset(){h.removeCallbacks(hold);h.removeCallbacks(watchdog);down=false;longPress=false;activeKey=-1;}
- public void onAccessibilityEvent(AccessibilityEvent e){}public void onInterrupt(){if(appKeys!=null)appKeys.clear();reset();h.removeCallbacks(single);pendingShort=false;}public void onDestroy(){onInterrupt();if(appKeys!=null)appKeys.close();super.onDestroy();}
+ @Override protected void onServiceConnected(){super.onServiceConnected();updateKeyFilter(false);}
+ void updateKeyFilter(boolean suspend){
+  android.accessibilityservice.AccessibilityServiceInfo info=getServiceInfo();if(info==null)return;
+  int flag=android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+  int flags=suspend?info.flags&~flag:info.flags|flag;
+  if(flags!=info.flags){onInterrupt();info.flags=flags;setServiceInfo(info);android.util.Log.i("ProskurninVoiceKey",suspend?"System dialog: key filter suspended":"App window: key filter restored");}
+  systemDialog=suspend;
+ }
+ public void onAccessibilityEvent(AccessibilityEvent e){if(e.getEventType()!=AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)return;String pkg=e.getPackageName()==null?null:e.getPackageName().toString(),cls=e.getClassName()==null?null:e.getClassName().toString();if("com.android.systemui".equals(pkg))android.util.Log.i("ProskurninVoiceKey","System window class="+cls);updateKeyFilter(SystemDialogKeys.suspended(systemDialog,pkg,cls));}
+ public void onInterrupt(){if(appKeys!=null)appKeys.clear();reset();h.removeCallbacks(single);pendingShort=false;}public void onDestroy(){unregisterReceiver(windowReturn);onInterrupt();if(appKeys!=null)appKeys.close();super.onDestroy();}
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preserve this firmware's action IDs/dimensions; add a persistent DPAD focus state. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ android:orientation="vertical" android:gravity="center" android:layout_gravity="center"
+ android:layout_width="wrap_content" android:layout_height="wrap_content"
+ android:minWidth="92dp" android:minHeight="92dp" android:paddingStart="4dp" android:paddingEnd="4dp"
+ android:background="@android:drawable/list_selector_background" android:backgroundTint="#9DC7EC">
+ <ImageView android:id="@android:id/icon" android:layout_width="24dp" android:layout_height="24dp"
+  android:layout_gravity="center" android:scaleType="center" android:alpha="?android:attr/primaryContentAlpha"/>
+ <TextView android:id="@android:id/message" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  android:layout_gravity="top|center_horizontal" android:gravity="center" android:paddingTop="10dp"
+  android:textAppearance="?android:attr/textAppearanceSmall" android:textSize="12sp"/>
+ <TextView android:id="@*android:id/status" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  android:layout_gravity="top|center_horizontal" android:gravity="center"
+  android:textAppearance="?android:attr/textAppearanceSmall" android:textColor="?android:attr/textColorTertiary"/>
+</LinearLayout>
