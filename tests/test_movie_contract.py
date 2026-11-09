@@ -32,6 +32,10 @@ class MovieContract(unittest.TestCase):
    self.assertTrue(permits_alternative(q))
   for q in ['Фильмы про подводный мир, не мультфильмы','Только мультфильмы','Никаких мультфильмов','cartoons only','no animation']:
    self.assertFalse(permits_alternative(q))
+ def test_availability_endpoint_is_bounded(self):
+  self.assertIn('/movie/105/watch/providers?',tmdb_validate('/movie/105/watch/providers','')[0])
+  for path,q in [('/movie/105/watch/providers','url=https://example.com'),('/movie/105/watch/providers/other',''),('/movie/-1/watch/providers','')]:
+   with self.assertRaises(InvalidRequest):tmdb_validate(path,q)
  def test_tmdb_append_restricted(self):
   self.assertIn('append_to_response=keywords',tmdb_validate('/movie/1','language=ru-RU&append_to_response=keywords')[0])
   for path,q in [('/movie/1','append_to_response=videos'),('/search/movie','query=x&append_to_response=keywords')]:

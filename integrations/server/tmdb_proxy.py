@@ -10,6 +10,9 @@ def validate(path,query):
  if poster:
   if query:raise InvalidRequest()
   return 'https://image.tmdb.org/t/p/w342/'+poster[1],True
+ if re.fullmatch(r'/movie/[0-9]{1,10}/watch/providers',path):
+  if query:raise InvalidRequest()
+  return 'https://api.themoviedb.org/3'+path+'?',False
  if not re.fullmatch(r'/(search/movie|discover/movie|movie/[0-9]{1,10})',path):raise InvalidRequest()
  try:q=urllib.parse.parse_qs(query,keep_blank_values=True,strict_parsing=True,max_num_fields=12)
  except ValueError:raise InvalidRequest() from None
