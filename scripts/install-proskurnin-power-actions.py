@@ -37,17 +37,14 @@ def main():
   (r/'before.json').write_text(json.dumps(baseline,indent=2)+'\n')
   apk=sh('pm path local.proskurnin.preview').split(':',1)[1];run('pull',apk,str(r/'launcher-before.apk'))
   prefs=run('exec-out','cat /data/user/0/local.proskurnin.preview/shared_prefs/preview.xml');f=r/'preview-before.xml';f.write_bytes(prefs);f.chmod(0o600)
-  assert 'setsid' in sh('command -v setsid'),'Need detached process launcher'
   assert any(x.split()[1]=='/vendor' and 'rw' in x.split()[3].split(',') for x in sh('cat /proc/mounts').splitlines())
   touched=True;sh('mkdir -p '+DIR+' && chmod 0755 '+DIR)
   for local,remote in files:
    run('push',str(local),remote);sh('chown 0:0 '+remote+' && chmod 0644 '+remote+' && chcon u:object_r:vendor_configs_file:s0 '+remote)
    assert sh('sha256sum '+remote).split()[0]==sha(local)
   sh('sync')
-  sh('setsid /system/bin/app_process -Djava.class.path='+JAR+' /system/bin '+CLASS+' </dev/null >/data/local/tmp/proskurnin-power.log 2>&1 & echo $! >'+PID)
-  time.sleep(2);pid=sh('cat '+PID);assert pid.isdigit();assert CLASS in sh('cat /proc/'+pid+'/cmdline')
-  status.update(installed=True,pid=int(pid),hashes={remote:sha(local) for local,remote in files})
-  print('Helper running; no power command executed; menu still controlled by launcher setting',flush=True)
+  status.update(installed=True,activation_pending_reboot=True,hashes={remote:sha(local) for local,remote in files})
+  print('Helper files verified; activation requires separately approved reboot; menu remains disabled',flush=True)
  except Exception:
   if touched:
    try:stop();archive();status['rollback_removed_helper']=True
