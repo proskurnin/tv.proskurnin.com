@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="local.proskurnin.displayprobe" android:versionCode="2" android:versionName="2">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="28"/>
+    <application android:label="Proskurnin · диагностика 4K" android:allowBackup="false"
+        android:theme="@android:style/Theme.Material.NoActionBar" android:hardwareAccelerated="true">
+        <activity android:name=".SurfaceProbe" android:screenOrientation="landscape" android:exported="true"/>
+    </application>
+</manifest>
