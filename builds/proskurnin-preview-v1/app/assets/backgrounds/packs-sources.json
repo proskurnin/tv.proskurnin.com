@@ -1,0 +1,90 @@
+{
+  "mountains-morning": {
+    "photo": "photos/mountains-morning.jpg",
+    "title": "Lake Sylvester during the sunrise, Kahurangi, New Zealand.jpg",
+    "author": "Michal Klajban",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Sylvester_during_the_sunrise,_Kahurangi,_New_Zealand.jpg",
+    "originalWidth": 7213,
+    "originalHeight": 3342,
+    "sha256": "7c77ae1d3bddcc0e60c2f30ce92c4b9a44e89cba07897d5f8f116399e84c334e"
+  },
+  "mountains-day": {
+    "photo": "photos/mountains-day.jpg",
+    "title": "Ergaki, Mountain lake Skazka, Rock formations, Sayan Mountains, Russia.jpg",
+    "author": "Vyacheslav Argenberg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ergaki,_Mountain_lake_Skazka,_Rock_formations,_Sayan_Mountains,_Russia.jpg",
+    "originalWidth": 6000,
+    "originalHeight": 3750,
+    "sha256": "c483c8c5bd191d91000544c0fc4c475c208da2c68816685524480b3accffaa1f"
+  },
+  "mountains-evening": {
+    "photo": "photos/mountains-evening.jpg",
+    "title": "Zagedan Lakes, Dusk in Caucasus Mountains, Karachay-Cherkessia.jpg",
+    "author": "Vyacheslav Argenberg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Zagedan_Lakes,_Dusk_in_Caucasus_Mountains,_Karachay-Cherkessia.jpg",
+    "originalWidth": 4912,
+    "originalHeight": 3264,
+    "sha256": "1a00e07855bfa1152f2cd32a972533d24bc236a21e6c8b16d86264de156839fd"
+  },
+  "mountains-night": {
+    "photo": "photos/mountains-night.jpg",
+    "title": "Llyn Ogwen Milky Way.jpg",
+    "author": "John Badham",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Llyn_Ogwen_Milky_Way.jpg",
+    "originalWidth": 10533,
+    "originalHeight": 5778,
+    "sha256": "8949c8867817a374b18628bed932f38ba6a40ac0672d22049ac2372ef8d0143c"
+  },
+  "sea-morning": {
+    "photo": "photos/sea-morning.jpg",
+    "title": "Diani Beach Sunrise Kenya.jpg",
+    "author": "Łukasz Ciesielski - kontakt: Facebook",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Diani_Beach_Sunrise_Kenya.jpg",
+    "originalWidth": 3757,
+    "originalHeight": 2500,
+    "sha256": "d219ef197805ad5e0c381243e15ae3101db9058cec9a0c8a8ca755a40c664542"
+  },
+  "sea-day": {
+    "photo": "photos/sea-day.jpg",
+    "title": "Navagio beach Zakynthos 3.jpg",
+    "author": "kallerna",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Navagio_beach_Zakynthos_3.jpg",
+    "originalWidth": 5100,
+    "originalHeight": 3400,
+    "sha256": "d9f593d8cc3ac35a013354bf02a7bfcff00a23910bb231c3e40692e3912348ea"
+  },
+  "sea-evening": {
+    "photo": "photos/sea-evening.jpg",
+    "title": "Sunset on the coast of Miyajima island, 20240816 1803 4107.jpg",
+    "author": "Jakub Hałun",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Sunset_on_the_coast_of_Miyajima_island,_20240816_1803_4107.jpg",
+    "originalWidth": 5819,
+    "originalHeight": 3272,
+    "sha256": "20f0f2c4ce896a3e474a94ffb46ea5bd2cca94a49f8a73cff770b8b9db37818b"
+  },
+  "sea-night": {
+    "photo": "photos/sea-night.jpg",
+    "title": "Andaman Sea at night, Moonset, Moonlight.jpg",
+    "author": "Vyacheslav Argenberg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Andaman_Sea_at_night,_Moonset,_Moonlight.jpg",
+    "originalWidth": 4032,
+    "originalHeight": 2688,
+    "sha256": "f6f688949280367ea3ac4bc7f0f4310a05db350380a8492240f98c755b69bd9b"
+  }
+}
