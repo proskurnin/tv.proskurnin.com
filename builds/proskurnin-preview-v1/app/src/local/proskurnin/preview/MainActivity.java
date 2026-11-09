@@ -5,7 +5,7 @@ public class MainActivity extends Activity {
  String[] names={"ОККО","Кинопоиск","Иви","YouTube","Zona","LazyMedia Deluxe"};
  String[] pkgs={"tv.okko.androidtv","ru.kinopoisk.tv","ru.ivi.client","com.google.android.youtube.tv","mobi.zona","com.lazycatsoftware.lmd"};
  final int[] colors={0xff701beb,0xffff651a,0xffee1754,0xffde202b,0xff2f83cd,0xff4267af};
- Handler h=new Handler(); SharedPreferences prefs; Screen screen; Bitmap bg; Bitmap[] icons=new Bitmap[6]; boolean[] installed=new boolean[6]; int selected=0, generation=0; boolean top=false,drawer=false; volatile boolean active=false; boolean weatherBusy=false; int weatherGeneration=0; int topIndex=0,extraIndex=0; String network="Сеть"; int networkState=0,networkTransport=0,wifiLevel=-1; boolean vpnActive=false,vpnKnown=false; final VpnToggleState vpnToggle=new VpnToggleState(); boolean ratesBusy=false; long ratesAttempt=-1; ConnectivityManager.NetworkCallback networkCallback; ArrayList<Entry> extras=new ArrayList<>(),allApps=new ArrayList<>(); boolean loadingApps=false; String weather="Москва · погода загружается",period=""; long weatherAt=-1; long weatherInterval=300000; String clock="",date=""; boolean longPress=false, confirmDown=false;
+ Handler h=new Handler(); SharedPreferences prefs; Screen screen; Bitmap bg; AppArtwork[] icons=new AppArtwork[6]; boolean[] installed=new boolean[6]; int selected=0, generation=0; boolean top=false,drawer=false; volatile boolean active=false; boolean weatherBusy=false; int weatherGeneration=0; int topIndex=0,extraIndex=0; String network="Сеть"; int networkState=0,networkTransport=0,wifiLevel=-1; boolean vpnActive=false,vpnKnown=false; final VpnToggleState vpnToggle=new VpnToggleState(); boolean ratesBusy=false; long ratesAttempt=-1; ConnectivityManager.NetworkCallback networkCallback; ArrayList<Entry> extras=new ArrayList<>(),allApps=new ArrayList<>(); boolean loadingApps=false; String weather="Москва · погода загружается",period=""; long weatherAt=-1; long weatherInterval=300000; String clock="",date=""; boolean longPress=false, confirmDown=false;
  boolean youtubeBusy=false; NetworkSpeedProbe speed; Bitmap previousBg;long backgroundFade;boolean timeReceiverRegistered,connectedForRefresh;
  final BroadcastReceiver timeReceiver=new BroadcastReceiver(){public void onReceive(Context c,Intent i){if(active){weatherAt=-1;updateTime();loadBackground();fetchWeather();h.removeCallbacks(tick);h.post(tick);}}};
  boolean weatherCached=true;
@@ -19,29 +19,13 @@ public class MainActivity extends Activity {
  AppArrangement arrangement = new AppArrangement(), beforeMove;
  boolean inOther=false, moving=false, arrangementLoaded=false;
  int folderReturnIndex=0, moveStart=0;
- final java.util.concurrent.ConcurrentHashMap<String,Bitmap> iconCache=new java.util.concurrent.ConcurrentHashMap<>();
- final java.util.concurrent.ConcurrentHashMap<Bitmap,Integer> iconTints=new java.util.concurrent.ConcurrentHashMap<>();
- static class Entry {String name,pkg;Bitmap icon;Entry(String n,String p,Bitmap b){name=n;pkg=p;icon=b;}}
- Bitmap appIcon(String pkg){
-  if(iconCache.containsKey(pkg))return iconCache.get(pkg);
-  try{
-   Drawable d=getPackageManager().getApplicationIcon(pkg);Bitmap raw=Bitmap.createBitmap(144,144,Bitmap.Config.ARGB_8888);Canvas c=new Canvas(raw);
-   int w=Math.max(1,d.getIntrinsicWidth()),hh=Math.max(1,d.getIntrinsicHeight());float scale=144f/Math.max(w,hh);int dw=Math.round(w*scale),dh=Math.round(hh*scale);
-   d.setBounds((144-dw)/2,(144-dh)/2,(144+dw)/2,(144+dh)/2);d.draw(c);
-   int tint=tileTint(raw);Bitmap rounded=Bitmap.createBitmap(144,144,Bitmap.Config.ARGB_8888);Paint mask=new Paint(3);mask.setShader(new BitmapShader(raw,Shader.TileMode.CLAMP,Shader.TileMode.CLAMP));new Canvas(rounded).drawRoundRect(new RectF(0,0,144,144),24,24,mask);raw.recycle();
-   iconTints.put(rounded,tint);iconCache.put(pkg,rounded);return rounded;
-  }catch(Exception e){return null;}
- }
- int tileTint(Bitmap icon){
-  float[] hsv=new float[3];float[] weights=new float[12];long[] red=new long[12],green=new long[12],blue=new long[12];int[] counts=new int[12];
-  for(int y=3;y<144;y+=6)for(int x=3;x<144;x+=6){int color=icon.getPixel(x,y);if(Color.alpha(color)<180)continue;Color.colorToHSV(color,hsv);if(hsv[1]<.22f||hsv[2]<.18f)continue;int bin=Math.min(11,(int)(hsv[0]/30));weights[bin]+=hsv[1];red[bin]+=Color.red(color);green[bin]+=Color.green(color);blue[bin]+=Color.blue(color);counts[bin]++;}
-  int best=0;for(int i=1;i<12;i++)if(weights[i]>weights[best])best=i;
-  if(counts[best]<4)return 0xff262b34;
-  int n=counts[best];return Color.rgb((int)(29*.8+red[best]/n*.2),(int)(38*.8+green[best]/n*.2),(int)(50*.8+blue[best]/n*.2));
- }
+ final AppArtwork.Loader artworkLoader=new AppArtwork.Loader();
+ static class Entry {String name,pkg;AppArtwork icon;Entry(String n,String p,AppArtwork b){name=n;pkg=p;icon=b;}}
+ AppArtwork appIcon(String pkg){return artworkLoader.peek(pkg);}
  void refreshApps(){if(loadingApps)return;loadingApps=true;new Thread(()->{
   ArrayList<Entry> result=new ArrayList<>();HashSet<String> seen=new HashSet<>();seen.add(getPackageName());
-  for(String cat:new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER,Intent.CATEGORY_LAUNCHER})for(ResolveInfo r:getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(cat),0)){String pkg=r.activityInfo.packageName;if(r.activityInfo.enabled&&r.activityInfo.applicationInfo.enabled&&seen.add(pkg))result.add(new Entry(r.loadLabel(getPackageManager()).toString(),pkg,appIcon(pkg)));}
+  for(String cat:new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER,Intent.CATEGORY_LAUNCHER})for(ResolveInfo r:getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(cat),0)){String pkg=r.activityInfo.packageName;if(r.activityInfo.enabled&&r.activityInfo.applicationInfo.enabled&&seen.add(pkg))result.add(new Entry(r.loadLabel(getPackageManager()).toString(),pkg,artworkLoader.load(this,r.activityInfo)));}
+  artworkLoader.retain(seen);
   result.sort((a,b)->java.text.Collator.getInstance(new Locale("ru")).compare(a.name,b.name));
   h.post(()->{allApps=result;loadingApps=false;if(!moving){ArrayList<String> available=new ArrayList<>();for(Entry e:allApps)available.add(e.pkg);arrangement.reconcile(available);saveArrangement();}else rebuildExtras();if(active)screen.invalidate();});
  },"launcher-apps").start();}
@@ -56,7 +40,7 @@ public class MainActivity extends Activity {
   refreshFavoriteVisuals();
  }
  void rebuildExtras(){extras=new ArrayList<>();for(String pkg:inOther?arrangement.other:arrangement.apps)extras.add(entry(pkg));if(!inOther)extras.add(new Entry("Прочее",OTHER,null));extraIndex=Math.max(0,Math.min(extraIndex,extras.size()-1));}
- void refreshFavoriteVisuals(){pkgs=arrangement.home.toArray(new String[0]);names=new String[pkgs.length];icons=new Bitmap[pkgs.length];installed=new boolean[pkgs.length];for(int i=0;i<pkgs.length;i++){Entry e=entry(pkgs[i]);names[i]=e.name;icons[i]=e.icon;installed[i]=launchIntent(pkgs[i])!=null;}selected=Math.max(0,Math.min(selected,pkgs.length-1));rebuildExtras();}
+ void refreshFavoriteVisuals(){pkgs=arrangement.home.toArray(new String[0]);names=new String[pkgs.length];icons=new AppArtwork[pkgs.length];installed=new boolean[pkgs.length];for(int i=0;i<pkgs.length;i++){Entry e=entry(pkgs[i]);names[i]=e.name;icons[i]=e.icon;installed[i]=launchIntent(pkgs[i])!=null;}selected=Math.max(0,Math.min(selected,pkgs.length-1));rebuildExtras();}
  void saveArrangement(){
   refreshFavoriteVisuals();try{JSONObject data=new JSONObject();data.put("home",new JSONArray(arrangement.home));data.put("apps",new JSONArray(arrangement.apps));data.put("other",new JSONArray(arrangement.other));SharedPreferences.Editor edit=prefs.edit().putString("app_arrangement_v1",data.toString());for(Entry e:allApps)edit.putString("favorite_label_"+e.pkg,e.name);edit.apply();}catch(JSONException ignored){}screen.invalidate();
  }
@@ -179,7 +163,29 @@ public class MainActivity extends Activity {
  public boolean onKeyUp(int code,KeyEvent e){if(code==23||code==66){boolean startedHere=confirmDown;confirmDown=false;if(startedHere&&!longPress&&!e.isCanceled()){if(moving)finishMove(true);else if(top&&!drawer)quick();else launch();}return true;}return super.onKeyUp(code,e);}
  class Screen extends View {Paint p=new Paint(3);RectF r=new RectF();Typeface light=Typeface.create("sans-serif-light",0),medium=Typeface.create("sans-serif-medium",0);Screen(){super(MainActivity.this);setFocusable(true);setFocusableInTouchMode(true);requestFocus();setContentDescription("Предпросмотр Proskurnin TV");}
  void text(Canvas c,String s,float x,float y,int size,int color,Typeface font){p.setColor(color);p.setTextSize(size);p.setTypeface(font);c.drawText(s,x,y,p);}
- void card(Canvas c,String name,Bitmap icon,float x,float y,boolean focus,boolean fancy){r.set(x,y,x+260,y+180);p.setColor(prefs.getBoolean("app_tints",true)&&icon!=null&&iconTints.containsKey(icon)?iconTints.get(icon):0xff262b34);c.drawRoundRect(r,22,22,p);if(focus){p.setColor(moving?0xffb5ddab:0xffc3dcff);p.setStrokeWidth(5);p.setStyle(Paint.Style.STROKE);r.inset(-7,-7);c.drawRoundRect(r,27,27,p);p.setStyle(Paint.Style.FILL);}if(icon!=null){p.setAlpha(255);c.drawBitmap(icon,null,new RectF(x+70,y+28,x+190,y+148),p);}else if(name.equals("Прочее")){p.setColor(0xffbdcce1);c.drawRoundRect(new RectF(x+78,y+57,x+118,y+77),6,6,p);c.drawRoundRect(new RectF(x+78,y+68,x+182,y+132),9,9,p);p.setColor(0xff262b34);c.drawRoundRect(new RectF(x+88,y+80,x+172,y+122),5,5,p);}else{text(c,name.substring(0,1),x+110,y+115,60,0xffbdcce1,medium);}p.setTextAlign(Paint.Align.CENTER);p.setTextSize(27);p.setTypeface(medium);String label=TextUtils.ellipsize(name,new android.text.TextPaint(p),267,TextUtils.TruncateAt.END).toString();text(c,label,x+130,y+228,27,focus?Color.WHITE:0xffb8c3d4,medium);p.setTextAlign(Paint.Align.LEFT);}
+ void card(Canvas c,String name,AppArtwork artwork,float x,float y,boolean focus,boolean fancy){
+  float width=AppArtwork.TILE_WIDTH,height=AppArtwork.TILE_HEIGHT;
+  r.set(x,y,x+width,y+height);p.setStyle(Paint.Style.FILL);
+  p.setColor(prefs.getBoolean("app_tints",true)&&artwork!=null?artwork.tint:AppArtwork.NEUTRAL);
+  c.drawRoundRect(r,22,22,p);
+  if(artwork!=null){
+   p.setAlpha(255);
+   RectF target=artwork.banner?new RectF(x,y,x+width,y+height):new RectF(x+70,y+(height-120)/2,x+190,y+(height+120)/2);
+   c.drawBitmap(artwork.bitmap,null,target,p);
+  }else if(name.equals("Прочее")){
+   float cy=y+height/2;p.setColor(0xffbdcce1);
+   c.drawRoundRect(new RectF(x+78,cy-33,x+118,cy-13),6,6,p);
+   c.drawRoundRect(new RectF(x+78,cy-22,x+182,cy+42),9,9,p);
+   p.setColor(AppArtwork.NEUTRAL);c.drawRoundRect(new RectF(x+88,cy-10,x+172,cy+32),5,5,p);
+  }else{text(c,name.isEmpty()?"?":name.substring(0,1),x+110,y+height/2+20,60,0xffbdcce1,medium);}
+  if(focus){
+   p.setColor(moving?0xffb5ddab:0xffc3dcff);p.setStrokeWidth(5);p.setStyle(Paint.Style.STROKE);
+   r.set(x-7,y-7,x+width+7,y+height+7);c.drawRoundRect(r,27,27,p);p.setStyle(Paint.Style.FILL);
+  }
+  p.setTextAlign(Paint.Align.CENTER);p.setTextSize(27);p.setTypeface(medium);
+  String label=TextUtils.ellipsize(name,new android.text.TextPaint(p),267,TextUtils.TruncateAt.END).toString();
+  text(c,label,x+width/2,y+height+43,27,focus?Color.WHITE:0xffb8c3d4,medium);p.setTextAlign(Paint.Align.LEFT);
+ }
  void drawQuickIcon(Canvas c,int i,float x,float y){c.save();c.translate(x,y);p.setStrokeWidth(3.5f);p.setStrokeCap(Paint.Cap.ROUND);if(i==0){c.drawRoundRect(new RectF(-24,-19,24,19),5,5,p);c.drawLine(-32,0,7,0,p);c.drawLine(0,-8,8,0,p);c.drawLine(0,8,8,0,p);c.drawLine(-9,27,9,27,p);c.drawLine(0,20,0,27,p);}else if(i==1){if(networkTransport==2){int signalColor=p.getColor();for(int arc=4;arc>=1;arc--){float radius=arc*8;p.setColor(WifiSignal.lit(wifiLevel,arc)?signalColor:0xff506072);c.drawArc(new RectF(-radius,13-radius,radius,13+radius),222,96,false,p);}p.setColor(wifiLevel>=0?signalColor:0xff506072);p.setStyle(Paint.Style.FILL);c.drawCircle(0,18,3.5f,p);p.setStyle(Paint.Style.STROKE);p.setColor(signalColor);}else if(networkTransport==1){c.drawRoundRect(new RectF(-19,-24,19,9),4,4,p);for(int k=-10;k<=10;k+=10)c.drawLine(k,-18,k,-10,p);c.drawLine(0,10,0,25,p);c.drawLine(-23,25,23,25,p);c.drawCircle(-23,25,3,p);c.drawCircle(23,25,3,p);}else{c.drawCircle(0,0,24,p);c.drawOval(new RectF(-11,-24,11,24),p);c.drawLine(-24,0,24,0,p);}}else if(i==2){Path gear=new Path();for(int k=0;k<64;k++){double a=k*Math.PI/32;float radius=(k%8>=2&&k%8<=5)?27:20;float gx=(float)Math.cos(a)*radius,gy=(float)Math.sin(a)*radius;if(k==0)gear.moveTo(gx,gy);else gear.lineTo(gx,gy);}gear.close();c.drawPath(gear,p);c.drawCircle(0,0,8,p);}else if(i==4){p.setColor(vpnToggle.pending?0xffffce83:vpnActive?0xff9cdeb5:!vpnKnown?0xffffce83:Color.WHITE);Path shield=new Path();shield.moveTo(0,-27);shield.lineTo(23,-17);shield.lineTo(21,10);shield.quadTo(16,23,0,30);shield.quadTo(-16,23,-21,10);shield.lineTo(-23,-17);shield.close();c.drawPath(shield,p);if(vpnToggle.pending){c.drawCircle(0,0,10,p);c.drawLine(0,-7,0,0,p);c.drawLine(0,0,6,4,p);}else if(!vpnKnown){c.drawLine(0,-10,0,4,p);c.drawCircle(0,13,1,p);}else if(vpnActive){c.drawLine(-10,0,-2,9,p);c.drawLine(-2,9,12,-9,p);}else{c.drawLine(-8,-8,8,8,p);c.drawLine(-8,8,8,-8,p);}}else if(i==5){Path star=new Path();star.moveTo(0,-27);star.lineTo(8,-8);star.lineTo(27,0);star.lineTo(8,8);star.lineTo(0,27);star.lineTo(-8,8);star.lineTo(-27,0);star.lineTo(-8,-8);star.close();c.drawPath(star,p);}else{c.drawCircle(0,0,28,p);c.drawCircle(0,-9,8,p);c.drawArc(new RectF(-17,4,17,32),190,160,false,p);}if(i==1&&networkState!=2){p.setColor(networkState==0?0xffff8992:0xffffce83);if(networkState==0){c.drawLine(-28,30,28,-30,p);}else{c.drawLine(28,-16,28,6,p);c.drawCircle(28,16,1,p);}}p.setStrokeCap(Paint.Cap.BUTT);c.restore();}
  void sparkline(Canvas c,int index,float y){
   if(!prefs.getBoolean("rates_chart",true))return;
