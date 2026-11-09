@@ -178,6 +178,11 @@ public class MainActivity extends Activity {
    c.drawRoundRect(new RectF(x+78,cy-22,x+182,cy+42),9,9,p);
    p.setColor(AppArtwork.NEUTRAL);c.drawRoundRect(new RectF(x+88,cy-10,x+172,cy+32),5,5,p);
   }else{text(c,name.isEmpty()?"?":name.substring(0,1),x+110,y+height/2+20,60,0xffbdcce1,medium);}
+  // Subtle permanent edge keeps dark banners distinct from the wallpaper.
+  // Draw inside the tile; the separate outer ring still denotes keyboard focus.
+  p.setColor(0x30dce6ef);p.setStrokeWidth(2);p.setStyle(Paint.Style.STROKE);
+  r.set(x+1,y+1,x+width-1,y+height-1);c.drawRoundRect(r,21,21,p);
+  p.setStyle(Paint.Style.FILL);p.setAlpha(255);
   if(focus){
    p.setColor(moving?0xffb5ddab:0xffc3dcff);p.setStrokeWidth(5);p.setStyle(Paint.Style.STROKE);
    r.set(x-7,y-7,x+width+7,y+height+7);c.drawRoundRect(r,27,27,p);p.setStyle(Paint.Style.FILL);
