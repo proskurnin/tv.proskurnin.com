@@ -20,12 +20,13 @@ final class MovieClient {
   return true;
  }
  static JSONObject compact(JSONObject detail,String reason)throws Exception{
-  return new JSONObject().put("id",detail.getInt("id")).put("title",detail.getString("title")).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("poster_path",detail.optString("poster_path","")).put("reason",reason);
+  boolean animation=false;JSONArray genres=detail.optJSONArray("genres");if(genres!=null)for(int i=0;i<genres.length();i++)if(genres.getJSONObject(i).optInt("id")==16)animation=true;
+  return new JSONObject().put("animation",animation).put("id",detail.getInt("id")).put("title",detail.getString("title")).put("original_title",detail.optString("original_title",detail.getString("title"))).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("poster_path",detail.optString("poster_path","")).put("reason",reason);
  }
- static JSONArray enrich(Context context,JSONObject proposal,String query,Alive alive)throws Exception{
-  JSONArray candidates=new JSONArray();HashMap<Integer,JSONObject> details=new HashMap<>();HashSet<Integer> seen=new HashSet<>();long deadline=android.os.SystemClock.elapsedRealtime()+60000;
+ static JSONArray enrich(Context context,JSONObject proposal,String query,String typeOverride,Alive alive)throws Exception{
+  JSONArray candidates=new JSONArray();HashMap<Integer,JSONObject> details=new HashMap<>();HashSet<Integer> seen=new HashSet<>();long deadline=android.os.SystemClock.elapsedRealtime()+90000;
   JSONArray picks=proposal.getJSONArray("picks");
-  for(int i=0;i<Math.min(picks.length(),6)&&alive.get()&&android.os.SystemClock.elapsedRealtime()<deadline;i++){
+  for(int i=0;i<Math.min(picks.length(),12)&&alive.get()&&android.os.SystemClock.elapsedRealtime()<deadline;i++){
    JSONObject pick=picks.getJSONObject(i);String title=pick.getString("title"),original=pick.optString("original_title",title);
    try{JSONArray matches=tmdb(context,"/search/movie","include_adult=false&query="+encode(original.isEmpty()?title:original)+"&year="+pick.getInt("year")).getJSONArray("results");
     for(int j=0;j<Math.min(5,matches.length());j++){
@@ -35,18 +36,18 @@ final class MovieClient {
      if(!detail.optString("release_date").startsWith(String.valueOf(pick.getInt("year")))||!fits(detail,proposal))continue;
      if(!MovieIdentity.matches(title,original,detail.optString("title"),detail.optString("original_title")))continue;
      JSONArray keywords=new JSONArray(),genres=new JSONArray();JSONObject kw=detail.optJSONObject("keywords");JSONArray list=kw==null?null:kw.optJSONArray("keywords");
-     if(list!=null)for(int k=0;k<Math.min(40,list.length());k++)keywords.put(shortText(list.getJSONObject(k).optString("name"),100));
-     list=detail.getJSONArray("genres");for(int k=0;k<Math.min(40,list.length());k++)genres.put(shortText(list.getJSONObject(k).optString("name"),100));
-     candidates.put(new JSONObject().put("id",id).put("title",shortText(detail.optString("title"),160)).put("original_title",shortText(detail.optString("original_title"),160)).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("original_language",detail.optString("original_language","")).put("overview",shortText(detail.optString("overview"),2500)).put("keywords",keywords).put("genres",genres));details.put(id,detail);break;
+     if(list!=null)for(int k=0;k<Math.min(20,list.length());k++)keywords.put(shortText(list.getJSONObject(k).optString("name"),80));
+     list=detail.getJSONArray("genres");for(int k=0;k<Math.min(10,list.length());k++)genres.put(shortText(list.getJSONObject(k).optString("name"),50));
+     candidates.put(new JSONObject().put("id",id).put("title",shortText(detail.optString("title"),160)).put("original_title",shortText(detail.optString("original_title"),160)).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("original_language",detail.optString("original_language","")).put("overview",shortText(detail.optString("overview"),1600)).put("keywords",keywords).put("genres",genres).put("rating",detail.optDouble("vote_average",0)).put("popularity",detail.optDouble("popularity",0)));details.put(id,detail);break;
     }
    }catch(IOException e){if(candidates.length()==0&&android.os.SystemClock.elapsedRealtime()+5000>=deadline)throw e;}
   }
   if(!alive.get())throw new InterruptedException();JSONArray result=new JSONArray();if(candidates.length()==0)return result;
   // No genre-only discover fallback. A separate pass checks the original query against TMDB evidence.
-  JSONObject verified=ApiClient.request(context,"ai/movies",new JSONObject().put("query",query).put("candidates",candidates));
+  JSONObject verified=ApiClient.request(context,"ai/movies",new JSONObject().put("query",query).put("requested_type",proposal.optString("requested_type","any")).put("type_override",typeOverride).put("candidates",candidates));
   if(verified.optInt("verification_version")!=2)throw new IOException("VERIFY");
   JSONArray accepted=verified.getJSONArray("matches");seen.clear();
-  for(int i=0;i<Math.min(3,accepted.length());i++){JSONObject item=accepted.getJSONObject(i);int id=item.getInt("id");if(details.containsKey(id)&&seen.add(id))result.put(compact(details.get(id),item.getString("reason")));}
+  for(int i=0;i<Math.min(12,accepted.length());i++){JSONObject item=accepted.getJSONObject(i);int id=item.getInt("id");if(details.containsKey(id)&&seen.add(id))result.put(compact(details.get(id),item.getString("reason")));}
   if(!alive.get())throw new InterruptedException();return result;
  }
  static String shortText(String s,int limit){return s.length()<=limit?s:s.substring(0,limit);}

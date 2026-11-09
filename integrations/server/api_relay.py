@@ -60,7 +60,7 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 if u.query:raise ValueError()
                 length=int(self.headers.get('Content-Length','0'))
-                if not 0<length<=(1010000 if path.endswith("/transcribe") else 32768 if path.endswith(("/chat","/movies")) else 4096):raise ValueError()
+                if not 0<length<=(1010000 if path.endswith("/transcribe") else 98304 if path.endswith("/movies") else 32768 if path.endswith("/chat") else 4096):raise ValueError()
                 data=json.loads(self.rfile.read(length))
                 if path.endswith('/transcribe'):validate_audio(data)
                 elif path.endswith('/speech'):validate_speech(data)

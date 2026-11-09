@@ -131,7 +131,7 @@ WantedBy=multi-user.target
         snippet+='''location = /tv-api/v1/'''+path+''' {
     limit_req zone='''+zone+''' burst=3 nodelay;
     limit_req_status 429;
-    client_max_body_size '''+('1m' if path=='ai/transcribe' else '32k')+''';
+    client_max_body_size '''+('1m' if path=='ai/transcribe' else '96k' if path=='ai/movies' else '32k')+''';
     proxy_pass http://127.0.0.1:18788;
     proxy_set_header Authorization $http_authorization;
     proxy_read_timeout 50s;
