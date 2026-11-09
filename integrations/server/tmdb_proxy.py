@@ -13,10 +13,11 @@ def validate(path,query):
  if not re.fullmatch(r'/(search/movie|discover/movie|movie/[0-9]{1,10})',path):raise InvalidRequest()
  try:q=urllib.parse.parse_qs(query,keep_blank_values=True,strict_parsing=True,max_num_fields=12)
  except ValueError:raise InvalidRequest() from None
- allowed={'language','include_adult','query','year','sort_by','vote_count.gte','with_genres','without_genres','with_runtime.lte','with_original_language'}
+ allowed={'language','include_adult','query','year','sort_by','vote_count.gte','with_genres','without_genres','with_runtime.lte','with_original_language','append_to_response'}
  if set(q)-allowed or any(len(v)!=1 or len(v[0])>180 for v in q.values()):raise InvalidRequest()
  for k,v in q.items():
   value=v[0]
+  if k=='append_to_response' and (value!='keywords' or not re.fullmatch(r'/movie/[0-9]{1,10}',path)):raise InvalidRequest()
   if k=='language' and value!='ru-RU':raise InvalidRequest()
   if k=='include_adult' and value!='false':raise InvalidRequest()
   if k=='sort_by' and value!='popularity.desc':raise InvalidRequest()

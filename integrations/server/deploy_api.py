@@ -52,6 +52,7 @@ def main():
 Match all
 ''')
     remote(RU,'/usr/sbin/sshd -t && systemctl reload ssh')
+    put(US,'/opt/proskurnin-worker/movie_contract.py',(ROOT/'movie_contract.py').read_text())
     put(US,'/opt/proskurnin-worker/tmdb_proxy.py',(ROOT/'tmdb_proxy.py').read_text())
     put(US,'/opt/proskurnin-worker/transcription.py',(ROOT/'transcription.py').read_text())
     put(US,'/opt/proskurnin-worker/chat_contract.py',(ROOT/'chat_contract.py').read_text())
@@ -98,6 +99,7 @@ MemoryMax=96M
 WantedBy=multi-user.target
 ''')
     remote(US,'sudo -n systemctl daemon-reload && sudo -n systemctl enable proskurnin-us-api proskurnin-api-tunnel && sudo -n systemctl restart proskurnin-us-api proskurnin-api-tunnel')
+    put(RU,'/opt/proskurnin-api/movie_contract.py',(ROOT/'movie_contract.py').read_text())
     put(RU,'/opt/proskurnin-api/tmdb_proxy.py',(ROOT/'tmdb_proxy.py').read_text())
     put(RU,'/opt/proskurnin-api/transcription.py',(ROOT/'transcription.py').read_text())
     put(RU,'/opt/proskurnin-api/chat_contract.py',(ROOT/'chat_contract.py').read_text())

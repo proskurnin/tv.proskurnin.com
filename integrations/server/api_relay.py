@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """RU API gateway forwarding only named API operations to an authenticated US worker."""
 from transcription import validate as validate_audio
+from movie_contract import validate as validate_movies
 import hashlib,hmac,json,time,urllib.request,urllib.error,urllib.parse
 from tmdb_proxy import Tmdb,TmdbError,InvalidRequest
 from chat_contract import validate_chat,validate_speech
@@ -59,12 +60,12 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 if u.query:raise ValueError()
                 length=int(self.headers.get('Content-Length','0'))
-                if not 0<length<=(1010000 if path.endswith("/transcribe") else 32768 if path.endswith("/chat") else 4096):raise ValueError()
+                if not 0<length<=(1010000 if path.endswith("/transcribe") else 32768 if path.endswith(("/chat","/movies")) else 4096):raise ValueError()
                 data=json.loads(self.rfile.read(length))
                 if path.endswith('/transcribe'):validate_audio(data)
                 elif path.endswith('/speech'):validate_speech(data)
                 elif path.endswith('/chat'):validate_chat(data)
-                elif not isinstance(data,dict) or set(data)!={'query'} or not isinstance(data['query'],str) or not 3<=len(data['query'].strip())<=400:raise ValueError()
+                else:validate_movies(data)
                 body=json.dumps(data).encode()
         except (ValueError,TypeError):self.reply(400,{'error':'invalid_parameters'});return
         start=time.monotonic();status=503;result={'error':'us_worker_unavailable'}
