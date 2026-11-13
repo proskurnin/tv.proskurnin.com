@@ -12,6 +12,12 @@ public final class BackgroundConfigTest {
   eq(BackgroundConfig.asset("sea","night"),"backgrounds/sea/night.jpg");eq(BackgroundConfig.asset("mountains","day"),"backgrounds/mountains/day.jpg");
   eq(BackgroundConfig.asset("../../private","../../private"),"backgrounds/day.jpg");eq(BackgroundConfig.asset(null,null),"backgrounds/day.jpg");
   eq(BackgroundConfig.dim(-5),0);eq(BackgroundConfig.dim(120),85);eq(BackgroundConfig.dim(69),69);
+  for(int h=0;h<24;h++)eq(BackgroundConfig.frame(h,"auto"),String.format("%02d.jpg",(h/2)*2));
+  eq(BackgroundConfig.frame(24,"auto"),"00.jpg");eq(BackgroundConfig.frame(-1,"auto"),"22.jpg");
+  eq(BackgroundConfig.frame(23,"morning"),"08.jpg");eq(BackgroundConfig.frame(0,"day"),"12.jpg");
+  eq(BackgroundConfig.frame(10,"evening"),"18.jpg");eq(BackgroundConfig.frame(12,"night"),"00.jpg");
+  eq(BackgroundConfig.pack("twohour"),"twohour");
+  eq(BackgroundConfig.localFramePath("big-sur",0),"local-twohour/big-sur/00.jpg");eq(BackgroundConfig.localFramePath("golden-gate",13),"local-twohour/golden-gate/12.jpg");eq(BackgroundConfig.localFramePath("../../private",23),"local-twohour/big-sur/22.jpg");
   System.out.println("Background schedule: boundaries, fixed modes, invalid preferences, safe asset paths OK");
  }
 }

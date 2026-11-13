@@ -105,8 +105,10 @@ WantedBy=multi-user.target
     put(RU,'/opt/proskurnin-api/chat_contract.py',(ROOT/'chat_contract.py').read_text())
     put(RU,'/opt/proskurnin-api/speed_probe.py',(ROOT/'speed_probe.py').read_text())
     put(RU,'/opt/proskurnin-api/dream_media.py',(ROOT/'dream_media.py').read_text())
+    put(RU,'/opt/proskurnin-api/device_auth.py',(ROOT/'device_auth.py').read_text())
     put(RU,'/opt/proskurnin-api/api_relay.py',(ROOT/'api_relay.py').read_text())
-    put(RU,'/etc/proskurnin-api/relay.json',json.dumps({'device_auth_sha256':hashlib.sha256(('Bearer '+device).encode()).hexdigest(),'relay_authorization':'Bearer '+relay,'tmdb_credential':settings.secrets['TMDB_READ_ACCESS_TOKEN']}),0o640)
+    extra_devices=json.loads(remote(RU,"python3 -c 'import json,pathlib;p=pathlib.Path(\"/etc/proskurnin-api/relay.json\");print(json.dumps(json.loads(p.read_text()).get(\"device_auth_hashes\",{}) if p.exists() else {}))'"))
+    put(RU,'/etc/proskurnin-api/relay.json',json.dumps({'device_auth_hashes':extra_devices,'device_auth_sha256':hashlib.sha256(('Bearer '+device).encode()).hexdigest(),'relay_authorization':'Bearer '+relay,'tmdb_credential':settings.secrets['TMDB_READ_ACCESS_TOKEN']}),0o640)
     remote(RU,'chown root:tv-api /etc/proskurnin-api/relay.json')
     put(RU,'/etc/systemd/system/proskurnin-api-relay.service','''[Unit]
 Description=Proskurnin allowlisted API relay

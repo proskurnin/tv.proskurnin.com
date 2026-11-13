@@ -49,8 +49,10 @@ def main():
     backup = '/var/backups/proskurnin-api/' + STAMP
     remote('install -d -m 700 ' + backup + '; cp -a /etc/nginx/sites-available/ru01-placeholder.conf ' + backup + '/nginx.conf; getent passwd tv-api >/dev/null || useradd --system --no-create-home --shell /usr/sbin/nologin tv-api')
     remote('install -d -m 755 /opt/proskurnin-api /etc/proskurnin-api; install -d -m 700 -o tv-api -g tv-api /var/lib/proskurnin-api')
+    put('/opt/proskurnin-api/device_auth.py', (ROOT / 'device_auth.py').read_text())
     put('/opt/proskurnin-api/weather_gateway.py', (ROOT / 'weather_gateway.py').read_text())
-    put('/etc/proskurnin-api/weather.json', json.dumps({'device_token_sha256': hashlib.sha256(token.encode()).hexdigest(),
+    extra_devices=json.loads(remote("python3 -c 'import json,pathlib;p=pathlib.Path(\"/etc/proskurnin-api/weather.json\");print(json.dumps(json.loads(p.read_text()).get(\"device_token_hashes\",{}) if p.exists() else {}))'"))
+    put('/etc/proskurnin-api/weather.json', json.dumps({'device_token_hashes':extra_devices,'device_token_sha256': hashlib.sha256(token.encode()).hexdigest(),
                                                       'cache_seconds': s.weather_cache_seconds}), 0o640)
     remote('chown root:tv-api /etc/proskurnin-api/weather.json')
     put('/etc/systemd/system/proskurnin-weather-api.service', '''[Unit]

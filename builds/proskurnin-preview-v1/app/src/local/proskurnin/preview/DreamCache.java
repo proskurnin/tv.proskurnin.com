@@ -37,7 +37,7 @@ final class DreamCache {
  }
  void trim(){synchronized(DreamCache.class){ArrayList<File> fs=new ArrayList<>(Arrays.asList(ready()));fs.sort(Comparator.comparingLong(File::lastModified));while(fs.size()>5){File victim=null;for(File f:fs)if(!f.getName().equals(playing)){victim=f;break;}if(victim==null)break;if(!victim.delete())throw new IllegalStateException("CACHE_DELETE");fs.remove(victim);}}}
  void download(JSONObject item,File part,Progress progress)throws Exception{
-  JSONObject config=ApiClient.privateJson(context,"api-client.json");String base=config.getString("base_url");if(!base.equals("https://ru01.firstvds.proskurn.in/tv-api/v1/"))throw new IOException("CONFIG");
+  JSONObject config=ApiClient.privateJson(context,"api-client.json");String base=config.getString("base_url");ApiEndpoint.validate(base);
   HttpURLConnection c=(HttpURLConnection)new URL(base+"dream/clip/"+item.getString("id")+".mp4").openConnection();
   long expected=item.getLong("bytes"),count=0,started=SystemClock.elapsedRealtime(),lastProgress=0;MessageDigest digest=MessageDigest.getInstance("SHA-256");
   try{cancel.setOnCancelListener(()->c.disconnect());cancel.throwIfCanceled();c.setConnectTimeout(5000);c.setReadTimeout(12000);c.setInstanceFollowRedirects(false);c.setRequestProperty("Authorization","Bearer "+config.getString("token"));

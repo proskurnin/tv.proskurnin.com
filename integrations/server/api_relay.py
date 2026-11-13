@@ -8,6 +8,7 @@ from chat_contract import validate_chat,validate_speech
 from dream_media import resolve as dream_media
 from speed_probe import serve as speed_probe
 from pathlib import Path
+from device_auth import identify
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 
 class Handler(BaseHTTPRequestHandler):
@@ -17,7 +18,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Content-Length',str(len(body)));self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(body)
     def dispatch(self,method):
         auth=self.headers.get('Authorization','')
-        if not hmac.compare_digest(hashlib.sha256(auth.encode()).hexdigest(),self.server.config['device_auth_sha256']):
+        device_id=identify(auth,self.server.config['device_auth_sha256'],self.server.config.get('device_auth_hashes',{}))
+        if device_id is None:
             self.reply(401,{'error':'unauthorized'});return
         u=urllib.parse.urlsplit(self.path);body=None
         if method=='GET' and u.path=='/tv-api/v1/network/speed':
@@ -82,7 +84,7 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:pass
         except (OSError,ValueError):pass
         self.reply(status,result)
-        print(json.dumps({'device_id':'tv-sdx43','api':u.path,'egress':'us','status':status,'ms':round((time.monotonic()-start)*1000)}),flush=True)
+        print(json.dumps({'device_id':device_id,'api':u.path,'egress':'us','status':status,'ms':round((time.monotonic()-start)*1000)}),flush=True)
     def do_GET(self):self.dispatch('GET')
     def do_POST(self):self.dispatch('POST')
 

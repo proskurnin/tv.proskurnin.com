@@ -12,8 +12,9 @@ final class WeatherClient {
   ArrayList<Source> sources=new ArrayList<>();
   if(!serverEnabled){sources.add(()->openMeteo());sources.add(()->wttr());return first(sources,alive);}
   if(configFile.length()>16384)throw new IOException("Routing file too large");
-  ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=new FileInputStream(configFile)){byte[] b=new byte[1024];int n;while((n=in.read(b))!=-1){if(out.size()+n>16384)throw new IOException("Routing file too large");out.write(b,0,n);}}
-  final JSONObject config=new JSONObject(out.toString("UTF-8"));
+  ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=PreviewApiConfigProvider.FILE.equals(configFile.getName())?new android.util.AtomicFile(configFile).openRead():new FileInputStream(configFile)){byte[] b=new byte[1024];int n;while((n=in.read(b))!=-1){if(out.size()+n>16384)throw new IOException("Routing file too large");out.write(b,0,n);}}
+  JSONObject parsed=new JSONObject(out.toString("UTF-8"));
+  final JSONObject config=parsed.has("weather")?parsed.getJSONObject("weather"):parsed;
   JSONArray providers=config.getJSONArray("providers");
   if(providers.length()<1||providers.length()>2)throw new IOException("Invalid providers");
   for(int i=0;i<providers.length();i++){
@@ -30,7 +31,7 @@ final class WeatherClient {
   if(route.equals("direct"))result=provider.equals("open_meteo")?openMeteo():wttr();
   else if(route.equals("ru")){
    String base=config.getString("base_url");
-   if(!base.equals("https://ru01.firstvds.proskurn.in/tv-api/v1/weather/"))throw new IOException("Untrusted API endpoint");
+   ApiEndpoint.validateWeather(base);
    String token=config.getString("token");if(token.length()<32)throw new IOException("Missing device credential");
    JSONObject payload=json(base+provider,token);
    result=provider.equals("open_meteo")?parseOpenMeteo(payload):parseWttr(payload);

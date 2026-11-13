@@ -8,6 +8,31 @@ final class MovieClient {
   try{return ApiClient.request(context,"tmdb"+path+"?language=ru-RU"+(query.isEmpty()?"":"&"+query),null);}
   catch(Exception e){throw new IOException("TMDB");}
  }
+ /** Returns exact title matches only; null means the query did not resolve to a title. */
+ static JSONArray exactTitle(Context context,String raw)throws Exception{
+  String query=raw==null?"":raw.replaceAll("(?i)<unk>|\\bunk\\b", " ").trim();
+  query=query.replaceAll("(?i)^(найди|найти|поищи|поискать|покажи)\\s+(мне\\s+)?(фильм|кино)\\s+", "").trim();
+  query=query.replaceAll("(?i)^где\\s+(посмотреть|смотреть)\\s+(фильм|кино)\\s+", "").trim();
+  if(query.length()<2||query.length()>160||recommendationIntent(query))return null;
+  JSONArray matches=tmdb(context,"/search/movie","include_adult=false&query="+encode(query)).getJSONArray("results");
+  JSONArray exact=new JSONArray();HashSet<Integer> seen=new HashSet<>();String normalized=MovieIdentity.normalize(query);
+  for(int i=0;i<Math.min(matches.length(),20);i++){
+   JSONObject item=matches.optJSONObject(i);if(item==null)continue;
+   String title=item.optString("title"),original=item.optString("original_title");
+   if(!normalized.equals(MovieIdentity.normalize(title))&&!normalized.equals(MovieIdentity.normalize(original)))continue;
+   int id=item.optInt("id");if(id<=0||!seen.add(id))continue;
+   JSONObject detail=tmdb(context,"/movie/"+id,"append_to_response=keywords");
+   String date=detail.optString("release_date");
+   exact.put(new JSONObject().put("id",id).put("title",shortText(detail.optString("title",title),160)).put("original_title",shortText(detail.optString("original_title",original),160)).put("year",date.length()>=4?date.substring(0,4):"").put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("poster_path",detail.optString("poster_path","")).put("reason","Точное совпадение названия"));
+  }
+  return exact.length()==0?null:exact;
+ }
+ static boolean recommendationIntent(String query){
+  String q=MovieIdentity.normalize(query);
+  String[] hints={"посоветуй","порекомендуй","подбери","чтопосмотреть","похожиена","напоминает","вдухе","вроде","фильмпро","фильмыпро","мультфильмыпро","подборка"};
+  for(String hint:hints)if(q.contains(MovieIdentity.normalize(hint)))return true;
+  return false;
+ }
  static String ids(JSONArray a)throws Exception{StringBuilder b=new StringBuilder();for(int i=0;i<a.length();i++){if(i>0)b.append(',');b.append(a.getInt(i));}return b.toString();}
  static boolean fits(JSONObject detail,JSONObject filters)throws Exception{
   if(detail.optBoolean("adult",false))return false;
@@ -53,7 +78,7 @@ final class MovieClient {
  static String shortText(String s,int limit){return s.length()<=limit?s:s.substring(0,limit);}
  static Bitmap poster(Context context,String path)throws Exception{
   if(!path.matches("/[A-Za-z0-9_-]+\\.jpg"))return null;
-  HttpURLConnection c=(HttpURLConnection)new URL("https://ru01.firstvds.proskurn.in/tv-api/v1/tmdb/poster"+path).openConnection();
+  HttpURLConnection c=(HttpURLConnection)new URL(ApiEndpoint.validate(ApiClient.privateJson(context,"api-client.json").getString("base_url"))+"tmdb/poster"+path).openConnection();
   try{c.setRequestProperty("Authorization","Bearer "+ApiClient.privateJson(context,"api-client.json").getString("token"));c.setConnectTimeout(4000);c.setReadTimeout(16000);c.setInstanceFollowRedirects(false);if(c.getResponseCode()!=200)return null;
    ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(out.size()+n>1048576)return null;out.write(b,0,n);}}
    BitmapFactory.Options options=new BitmapFactory.Options();options.inSampleSize=2;options.inPreferredConfig=Bitmap.Config.RGB_565;byte[] bytes=out.toByteArray();return BitmapFactory.decodeByteArray(bytes,0,bytes.length,options);

@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import os,shutil
+import os,shutil,hashlib,re
 import subprocess,zipfile,tempfile
 ROOT=Path(__file__).resolve().parents[1];B=ROOT/'builds/proskurnin-remote-v1';O=Path(tempfile.mkdtemp(prefix='out-',dir=B))
 SDK=Path(os.environ.get('ANDROID_SDK_ROOT',str(Path.home()/'Library/Android/sdk')));BT=SDK/'build-tools/35.0.0';AJ=SDK/'platforms/android-33/android.jar';JAVA=Path(os.environ['JAVA_HOME'])/'bin' if os.environ.get('JAVA_HOME') else Path(subprocess.check_output(['/usr/libexec/java_home'],text=True).strip())/'bin' if Path('/usr/libexec/java_home').exists() else Path(shutil.which('javac')).resolve().parent
 def run(*args):subprocess.run([str(x) for x in args],check=True)
 for part in ['app','bridge']:
  out=O/part;(out/'classes').mkdir(parents=True)
- run(JAVA/'javac','-source','8','-target','8','-bootclasspath',str(AJ)+':'+str(BT/'core-lambda-stubs.jar'),'-encoding','UTF-8','-d',out/'classes',*sorted((B/part/'src').rglob('*.java')))
+ sources=sorted((B/part/'src').rglob('*.java'))
+ if part=='bridge':
+  certificate=subprocess.check_output([str(JAVA/'keytool'),'-exportcert','-keystore',str(ROOT/'builds/proskurnin-preview-v1/diagnostic.keystore'),'-alias','diagnostic','-storepass','diagnostic'])
+  pinned=out/'InputBridge.java';pinned.write_text(re.sub(r'CERT="[0-9a-f]{64}"','CERT="'+hashlib.sha256(certificate).hexdigest()+'"',sources[0].read_text()));sources=[pinned]
+ run(JAVA/'javac','-source','8','-target','8','-bootclasspath',str(AJ)+':'+str(BT/'core-lambda-stubs.jar'),'-encoding','UTF-8','-d',out/'classes',*sources)
  run(BT/'d8','--min-api','28','--lib',AJ,'--output',out,*sorted((out/'classes').rglob('*.class')))
  if part=='bridge':
   with zipfile.ZipFile(B/'input-bridge.jar','w',zipfile.ZIP_DEFLATED) as z:z.write(out/'classes.dex','classes.dex')

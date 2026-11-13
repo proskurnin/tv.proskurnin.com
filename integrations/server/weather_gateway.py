@@ -10,6 +10,7 @@ import threading
 import time
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from device_auth import identify
 
 URLS = {
     'open_meteo': 'https://api.open-meteo.com/v1/forecast?latitude=55.75&longitude=37.62&current=temperature_2m,weather_code,is_day,wind_speed_10m&wind_speed_unit=ms&timeformat=unixtime',
@@ -103,7 +104,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         auth = self.headers.get('Authorization', '')
         supplied = auth[7:] if auth.startswith('Bearer ') else ''
-        if not supplied or not hmac.compare_digest(hashlib.sha256(supplied.encode()).hexdigest(), self.server.token_hash):
+        device_id = identify(supplied, self.server.token_hash, getattr(self.server, 'device_hashes', {}))
+        if device_id is None:
             self.reply(401, {'error': 'unauthorized'})
             return
         routes = {'/tv-api/v1/weather/' + provider: provider for provider in URLS}
@@ -119,13 +121,14 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             self.reply(503, {'error': 'weather_unavailable'})
             status = 503
-        print(json.dumps({'device_id': 'tv-sdx43', 'api': 'weather.' + provider,
+        print(json.dumps({'device_id': device_id, 'api': 'weather.' + provider,
                           'status': status, 'ms': round((time.monotonic() - started) * 1000)}), flush=True)
 
 def main():
     config = json.loads(Path('/etc/proskurnin-api/weather.json').read_text())
     server = ThreadingHTTPServer(('127.0.0.1', 18787), Handler)
     server.token_hash = config['device_token_sha256']
+    server.device_hashes = config.get('device_token_hashes', {})
     server.cache = WeatherCache('/var/lib/proskurnin-api/weather', config['cache_seconds'])
     server.serve_forever()
 
