@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 1,
+  "device": {
+    "model": "SDX-43U4123B",
+    "productModelAliases": [
+      "SaluteTV"
+    ],
+    "deviceAliases": [
+      "m7332_eu"
+    ],
+    "package": "local.proskurnin.preview",
+    "launcherVersion": "1.44.3",
+    "launcherVersionCode": 82,
+    "remoteVersion": "1.2",
+    "remoteVersionCode": 4,
+    "resolution": [
+      1920,
+      1080
+    ]
+  },
+  "syntheticInputs": {
+    "movie_space": "семейный фильм про космос",
+    "assistant_evening": "Что посмотреть вечером всей семьёй?",
+    "remote_voice_space": "Найди семейный фильм про космос",
+    "keyboard_space": "космос"
+  },
+  "commonMasks": [
+    {
+      "rect": [
+        80,
+        75,
+        590,
+        55
+      ],
+      "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+    }
+  ],
+  "screens": [
+    {
+      "id": "home",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Главный экран",
+      "steps": [
+        "HOME",
+        "WAIT:5"
+      ],
+      "expected": [],
+      "forbidden": [
+        "загружается",
+        "Нет сети",
+        "недоступна"
+      ],
+      "masks": []
+    },
+    {
+      "id": "home-app-menu",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Меню приложения",
+      "steps": [
+        "HOME",
+        "LONG_OK",
+        "WAIT:1"
+      ],
+      "expected": [
+        "Переместить"
+      ],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "folder-other",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Папка Прочее",
+      "steps": [
+        "HOME",
+        "OPEN_OTHER",
+        "WAIT:2"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "rates",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Виджет курсов",
+      "steps": [
+        "HOME",
+        "WAIT:5"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "movie-pick",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "AI-подбор фильма · синтетический запрос до отправки",
+      "steps": [
+        "HOME",
+        "OPEN_MOVIE",
+        "LEFT",
+        "SYNTHETIC:movie_space",
+        "WAIT:2"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "assistant",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Диалог с AI · синтетический запрос до отправки",
+      "steps": [
+        "HOME",
+        "OPEN_ASSISTANT",
+        "LEFT",
+        "SYNTHETIC:assistant_evening",
+        "WAIT:2"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Настройки лаунчера",
+      "steps": [
+        "HOME",
+        "OPEN_SETTINGS"
+      ],
+      "expected": [
+        "Настройки"
+      ],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-background",
+      "priority": "P1",
+      "kind": "tv",
+      "title": "Настройки фона",
+      "steps": [
+        "HOME",
+        "OPEN_SETTINGS",
+        "OPEN_BACKGROUND"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "power-menu",
+      "priority": "P1",
+      "kind": "manual",
+      "title": "Меню питания",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    {
+      "id": "remote-main",
+      "priority": "P1",
+      "kind": "remote",
+      "title": "Веб-пульт",
+      "page": "remote-main",
+      "masks": []
+    },
+    {
+      "id": "remote-voice",
+      "priority": "P1",
+      "kind": "remote",
+      "title": "Голосовой режим веб-пульта",
+      "page": "remote-voice",
+      "input": "remote_voice_space",
+      "masks": []
+    },
+    {
+      "id": "boot",
+      "priority": "P1",
+      "kind": "render",
+      "title": "Загрузочная заставка",
+      "masks": []
+    },
+    {
+      "id": "home-move",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Перемещение приложения",
+      "steps": [
+        "HOME",
+        "LONG_OK",
+        "OK",
+        "WAIT:1"
+      ],
+      "expected": [
+        "Перемещение"
+      ],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "all-apps",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Все приложения",
+      "steps": [
+        "HOME",
+        "DOWN"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "movie-list",
+      "priority": "P2",
+      "kind": "deferred",
+      "title": "Результаты подбора",
+      "reason": "Отправка поискового запроса меняет постоянный локальный movie_cache; владелец запретил менять историю и кэш."
+    },
+    {
+      "id": "weather",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Погода",
+      "steps": [
+        "HOME",
+        "OPEN_WEATHER_SOURCES"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-appearance",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Оформление экрана",
+      "steps": [
+        "HOME",
+        "OPEN_SETTINGS",
+        "OPEN_APPEARANCE"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-app-keys",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Кнопки приложений",
+      "steps": [
+        "HOME",
+        "OPEN_APP_KEYS"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-remote",
+      "priority": "P2",
+      "kind": "tv",
+      "title": "Настройки веб-пульта",
+      "steps": [
+        "HOME",
+        "OPEN_REMOTE_SETTINGS"
+      ],
+      "expected": [],
+      "forbidden": [],
+      "masks": [
+        {
+          "rect": [
+            60,
+            210,
+            650,
+            50
+          ],
+          "reason": "локальный IP-адрес веб-пульта"
+        },
+        {
+          "rect": [
+            1325,
+            245,
+            455,
+            445
+          ],
+          "reason": "QR-код сопряжения"
+        },
+        {
+          "rect": [
+            60,
+            840,
+            430,
+            45
+          ],
+          "reason": "имя сопряжённого телефона"
+        },
+        {
+          "rect": [
+            1435,
+            775,
+            320,
+            55
+          ],
+          "reason": "область одноразового кода сопряжения"
+        }
+      ]
+    },
+    {
+      "id": "remote-keyboard",
+      "priority": "P2",
+      "kind": "remote",
+      "title": "Клавиатура веб-пульта",
+      "page": "remote-keyboard",
+      "input": "keyboard_space",
+      "masks": []
+    },
+    {
+      "id": "movie-availability",
+      "priority": "P3",
+      "kind": "tv",
+      "title": "Наличие фильма в сервисах",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-background-sea",
+      "priority": "P3",
+      "kind": "tv",
+      "title": "Предпросмотр серии моря",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-background-mountains",
+      "priority": "P3",
+      "kind": "tv",
+      "title": "Предпросмотр серии гор",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "settings-screensaver",
+      "priority": "P3",
+      "kind": "tv",
+      "title": "Настройки заставки",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "remote-pair",
+      "priority": "P3",
+      "kind": "remote",
+      "title": "Сопряжение без данных пользователя",
+      "page": "remote-pair",
+      "masks": []
+    },
+    {
+      "id": "photo-tv",
+      "priority": "P3",
+      "kind": "owner",
+      "title": "Фото телевизора",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    }
+  ]
+}

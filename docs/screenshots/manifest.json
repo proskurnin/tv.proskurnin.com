@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 1,
+  "device": {
+    "model": "SDX-43U4123B",
+    "productModelAliases": [
+      "SaluteTV"
+    ],
+    "deviceAliases": [
+      "m7332_eu"
+    ],
+    "package": "local.proskurnin.preview",
+    "launcherVersion": "1.44.3",
+    "launcherVersionCode": 82,
+    "remoteVersion": "1.2",
+    "remoteVersionCode": 4,
+    "resolution": [
+      1920,
+      1080
+    ]
+  },
+  "screens": {
+    "power-menu": {
+      "file": "power-menu.png",
+      "sha256": "69fe205ca63c53ce314e78a1450bf40a3d8015858bb3f4431b05a64390f59c7b",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:16:17+03:00",
+      "source": "owner-opened-menu",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "remote-main": {
+      "file": "remote-main.png",
+      "sha256": "1b67ff96dda7bef866c7e675516e130bee6731b3f1f2835e58a27363dc8652c5",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:20:37+03:00",
+      "source": "local-remote-mock",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "remote-voice": {
+      "file": "remote-voice.png",
+      "sha256": "2c162a6a078a36d0df1e398499545c204f13137ff92fa93990391979b383423b",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:21:00+03:00",
+      "source": "local-remote-mock",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "remote-keyboard": {
+      "file": "remote-keyboard.png",
+      "sha256": "d490c9ea30bdb24ecf60e1692838ee29f7cea85cfd2f0a440557aad9097b9059",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:21:03+03:00",
+      "source": "local-remote-mock",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "boot": {
+      "file": "boot.png",
+      "sha256": "4db76c373b66f83fdec73fcfe507fae33f5fb413f07661185d9cf50f3e8ad6bf",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:27:08+03:00",
+      "source": "render-proskurnin-boot-v7",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "home": {
+      "file": "home.png",
+      "sha256": "d6d43741e07714fbc0028efb9e01b2a5e5b0517d84341c081fa53114fb347147",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:28:16+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "home-app-menu": {
+      "file": "home-app-menu.png",
+      "sha256": "7779b147c062a7adeaead3d545e5b128d2fc3bf54b5d1432927884245c331e64",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:29:41+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "folder-other": {
+      "file": "folder-other.png",
+      "sha256": "2fc66181c3abe34b202440a3b104ea051c06f70756a32d13abc060c68fd39e40",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T05:33:52+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "rates": {
+      "file": "rates.png",
+      "sha256": "6f3ea3fa9aa15d2a4eed902cac000d8cd2fed7960b555c34ba946db0c3957e9d",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:26:57+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "settings": {
+      "file": "settings.png",
+      "sha256": "f2642fc080517f86e7dcadc5ff3dbfd116e8d3fc9b393811e7b0ff0da70d3949",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:28:33+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "settings-background": {
+      "file": "settings-background.png",
+      "sha256": "183f4ac984bd7445b190069ec34bc65d521fb0b1858b20d81b90ab958fb96755",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:33:23+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "all-apps": {
+      "file": "all-apps.png",
+      "sha256": "51d0f36dcd34454d579d1dfcb90d5431147f5e819ad53a054434a9cf96526f98",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:34:49+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "settings-appearance": {
+      "file": "settings-appearance.png",
+      "sha256": "e053188b179b10c4ef098e21adcb7eed9635752811284e15a4faef617fe69342",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:35:52+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "settings-app-keys": {
+      "file": "settings-app-keys.png",
+      "sha256": "5d628d236cbec2684c65cd317c595bf5b6e91ee8c9ed493fd667366f987d8f0e",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:36:39+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": []
+    },
+    "settings-remote": {
+      "file": "settings-remote.png",
+      "sha256": "25e3d44024f12ff10590dc440fe2497c4366953a49688ca1f57dd775162be3c1",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T10:39:31+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            60,
+            210,
+            650,
+            50
+          ],
+          "reason": "локальный IP-адрес веб-пульта"
+        },
+        {
+          "rect": [
+            1325,
+            245,
+            455,
+            445
+          ],
+          "reason": "QR-код сопряжения"
+        },
+        {
+          "rect": [
+            60,
+            840,
+            430,
+            45
+          ],
+          "reason": "имя сопряжённого телефона"
+        },
+        {
+          "rect": [
+            1435,
+            775,
+            320,
+            55
+          ],
+          "reason": "область одноразового кода сопряжения"
+        }
+      ]
+    }
+  }
+}

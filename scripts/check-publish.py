@@ -2,7 +2,7 @@
 """Check Git index for private paths, credential patterns and known local credentials.
 Print only filenames and categories, never matching secret values.
 """
-import json,re,subprocess,sys
+import hashlib,json,re,struct,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def main():
@@ -30,6 +30,48 @@ def main():
   if len(data)>3000000:issues.append((name,'large file'))
   if any(re.search(p.encode(),data) for p in patterns):issues.append((name,'secret pattern'))
   if any(v.encode() in data for v in values):issues.append((name,'matches local credential'))
+ # Screenshot-specific publication checks read only the Git index, just like
+ # the secret scan above. Never print image contents or metadata values.
+ shot_names=[n for n in files if n.startswith('docs/screenshots/')]
+ if shot_names:
+  def staged(path):return subprocess.check_output(['git','show',':'+path],cwd=ROOT)
+  try:
+   catalog=json.loads(staged('docs/screenshots/catalog.json'))
+   manifest=json.loads(staged('docs/screenshots/manifest.json'))
+   private_keys={'ip','serial','ssid','mac','address'}
+   if private_keys.intersection(k.lower() for k in catalog.get('device',{})):
+    issues.append(('docs/screenshots/catalog.json','private network/device identifier in catalog'))
+   if private_keys.intersection(k.lower() for k in manifest.get('device',{})):
+    issues.append(('docs/screenshots/manifest.json','private network/device identifier in manifest'))
+   specs={x['id']:x for x in catalog['screens']}
+   entries=manifest.get('screens',{})
+   for name in shot_names:
+    if not name.endswith('.png'):continue
+    sid=Path(name).stem
+    entry=entries.get(sid)
+    spec=specs.get(sid)
+    if not entry or not spec:issues.append((name,'not declared in catalog and manifest'));continue
+    raw=staged(name)
+    if len(raw)>3000000:issues.append((name,'screenshot exceeds 3 MB'))
+    if not raw.startswith(b'\x89PNG\r\n\x1a\n'):issues.append((name,'invalid PNG'))
+    else:
+     pos=8;width=height=None;exif=False
+     while pos+12<=len(raw):
+      size=struct.unpack('>I',raw[pos:pos+4])[0];kind=raw[pos+4:pos+8]
+      if pos+12+size>len(raw):break
+      if kind==b'IHDR':width,height=struct.unpack('>II',raw[pos+8:pos+16])
+      if kind==b'eXIf':exif=True
+      if kind==b'IEND':break
+      pos+=12+size
+     if exif:issues.append((name,'EXIF metadata present'))
+     if width is None or height is None:issues.append((name,'invalid PNG dimensions'))
+     elif spec.get('kind') in ('tv','manual') and [width,height]!=catalog['device'].get('resolution'):issues.append((name,'TV dimensions mismatch'))
+    if hashlib.sha256(raw).hexdigest()!=entry.get('sha256'):issues.append((name,'SHA256 does not match manifest'))
+    if any(m.get('rect',[0,0,0,0])[2]<=0 or m.get('rect',[0,0,0,0])[3]<=0 for m in spec.get('masks',[])):issues.append((name,'privacy mask coordinates not configured'))
+   for sid,entry in entries.items():
+    if 'docs/screenshots/'+entry.get('file','') not in shot_names:issues.append(('docs/screenshots/'+sid+'.png','manifest image is not staged'))
+  except Exception:
+   issues.append(('docs/screenshots','catalog or manifest could not be validated'))
  for name,reason in issues:print(name+': '+reason)
  print('Publication check:',len(files),'files;',len(issues),'findings')
  return bool(issues)
