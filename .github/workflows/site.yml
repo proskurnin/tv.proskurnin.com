@@ -1,0 +1,98 @@
+# Site https://tv.proskurnin.com/ (docs/SITE.md).
+# Pull requests build the site; a push to main also deploys it through the restricted
+# SSH command on web-80.87.199.223 (user tv-deploy may only run "deploy <sha> <run>").
+name: Site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'docs/screenshots/**'
+      - 'CHANGELOG.md'
+      - 'scripts/build-site.py'
+      - 'tests/test_build_site.py'
+      - 'builds/proskurnin-preview-v1/app/AndroidManifest.xml'
+      - 'builds/proskurnin-remote-v1/app/AndroidManifest.xml'
+      - 'builds/proskurnin-preview-v1/app/assets/backgrounds/**'
+      - '.github/workflows/site.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'docs/screenshots/**'
+      - 'CHANGELOG.md'
+      - 'scripts/build-site.py'
+      - 'tests/test_build_site.py'
+      - 'builds/proskurnin-preview-v1/app/AndroidManifest.xml'
+      - 'builds/proskurnin-remote-v1/app/AndroidManifest.xml'
+      - 'builds/proskurnin-preview-v1/app/assets/backgrounds/**'
+      - '.github/workflows/site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOMAIN: tv.proskurnin.com
+  DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '80.87.199.223' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pillow
+        run: python3 -m venv .venv && .venv/bin/pip install --quiet Pillow==11.0.0
+      - name: Tests
+        run: .venv/bin/python -m unittest discover -s tests -p 'test_build_site.py' -v
+      - name: Build
+        run: .venv/bin/python scripts/build-site.py
+      - name: Bundle
+        run: |
+          test -s dist/site/index.html
+          ! grep -q '<!--DATA-->' dist/site/index.html
+          printf '%s\n' "$GITHUB_SHA" > dist/site/release.txt
+          tar -czf bundle.tgz -C dist site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: bundle.tgz
+          retention-days: 14
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: production-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+      - name: Deploy over the restricted SSH command
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_SSH_KEY" && test -n "$DEPLOY_KNOWN_HOSTS"
+          ssh_dir=$(mktemp -d); trap 'rm -rf "$ssh_dir"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          chmod 600 "$ssh_dir/key" "$ssh_dir/known_hosts"
+          ssh -T -i "$ssh_dir/key" -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$ssh_dir/known_hosts" -o ConnectTimeout=20 \
+            "tv-deploy@$DEPLOY_HOST" "deploy $GITHUB_SHA $GITHUB_RUN_ID" < bundle.tgz
+      - name: Verify the public release
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if [ "$(curl --fail --silent --max-time 15 "https://$DOMAIN/release.txt")" = "$GITHUB_SHA" ]; then
+              echo "Published $GITHUB_SHA on https://$DOMAIN"; exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::https://$DOMAIN/release.txt does not show $GITHUB_SHA"; exit 1
