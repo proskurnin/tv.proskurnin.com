@@ -92,6 +92,43 @@ def stats(entries: list[dict], launcher: str, remote: str) -> dict:
     }
 
 
+def catalog_titles() -> dict:
+    """id -> title from docs/screenshots/catalog.json (the manifest does not repeat titles)."""
+    path = SHOTS / 'catalog.json'
+    if not path.exists():
+        return {}
+    screens = json.loads(path.read_text(encoding='utf-8')).get('screens', [])
+    items = screens.values() if isinstance(screens, dict) else screens
+    return {s['id']: s.get('title', '') for s in items if isinstance(s, dict) and 'id' in s}
+
+
+def manifest_screens(manifest: dict, titles: dict) -> list:
+    """Screens as a list of dicts with 'id'. Accepts both manifest layouts:
+    a list of {id, ...} (docs/SCREENSHOTS.md 7.2) and a map {id: {...}} written by capture-screenshots.py."""
+    screens = manifest.get('screens', [])
+    if isinstance(screens, dict):
+        screens = [{'id': sid, **entry} for sid, entry in screens.items() if isinstance(entry, dict)]
+    out = []
+    for s in screens:
+        if isinstance(s, dict):
+            s = dict(s)
+            s.setdefault('title', titles.get(s.get('id', ''), ''))
+            out.append(s)
+    return out
+
+
+def phone_crop(img: 'Image.Image') -> 'Image.Image':
+    """Phone remote shots go into a 390x844 phone frame. A landscape capture of the remote page
+    (centred column on an empty background) is cut to that aspect around its centre for the site only;
+    the PNG in docs/screenshots stays untouched."""
+    ratio = 390 / 844
+    if img.width / img.height <= ratio:
+        return img
+    w = round(img.height * ratio)
+    left = (img.width - w) // 2
+    return img.crop((left, 0, left + w, img.height))
+
+
 def version_name(manifest: Path) -> str:
     m = re.search(r'android:versionName="([^"]+)"', manifest.read_text(encoding='utf-8')) if manifest.exists() else None
     return m.group(1) if m else ''
@@ -153,12 +190,13 @@ def build(out: Path) -> dict:
     screens = {}
     manifest_path = SHOTS / 'manifest.json'
     if manifest_path.exists():
-        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-        for s in manifest.get('screens', []):
+        for s in manifest_screens(json.loads(manifest_path.read_text(encoding='utf-8')), catalog_titles()):
             sid, file = s.get('id', ''), SHOTS / s.get('file', '')
             if not re.fullmatch(r'[a-z0-9-]+', sid) or not file.is_file():
                 continue
             img = Image.open(file).convert('RGB')
+            if sid.startswith('remote-'):
+                img = phone_crop(img)
             full = write_hashed(assets / 'shots', sid, 'webp', webp(img, 86))
             small_w = 960 if img.width >= img.height else max(1, img.width // 2)
             small_img = img.resize((small_w, round(img.height * small_w / img.width)), Image.LANCZOS) if img.width > small_w else img

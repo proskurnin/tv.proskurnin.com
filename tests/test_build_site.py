@@ -68,3 +68,46 @@ class CreditsTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FakeImage:
+    def __init__(self, w, h):
+        self.width, self.height = w, h
+
+    def crop(self, box):
+        left, top, right, bottom = box
+        img = FakeImage(right - left, bottom - top)
+        img.box = box
+        return img
+
+
+class ScreensTest(unittest.TestCase):
+    def test_manifest_list_and_map(self):
+        titles = {'home': 'Главный экран'}
+        as_list = build_site.manifest_screens({'screens': [{'id': 'home', 'file': 'home.png'}]}, titles)
+        as_map = build_site.manifest_screens({'screens': {'home': {'file': 'home.png'}}}, titles)
+        self.assertEqual(as_list, as_map)
+        self.assertEqual(as_map[0], {'id': 'home', 'file': 'home.png', 'title': 'Главный экран'})
+
+    def test_manifest_keeps_own_title(self):
+        s = build_site.manifest_screens({'screens': {'home': {'file': 'home.png', 'title': 'Своё'}}}, {'home': 'X'})
+        self.assertEqual(s[0]['title'], 'Своё')
+
+    def test_real_manifest_matches_catalog(self):
+        import json
+        shots = ROOT / 'docs' / 'screenshots'
+        if not (shots / 'manifest.json').exists():
+            self.skipTest('no screenshots yet')
+        screens = build_site.manifest_screens(json.loads((shots / 'manifest.json').read_text(encoding='utf-8')),
+                                              build_site.catalog_titles())
+        for s in screens:
+            self.assertTrue((shots / s['file']).is_file(), s['id'])
+            self.assertTrue(s['title'], s['id'])
+
+    def test_phone_crop(self):
+        img = build_site.phone_crop(FakeImage(1920, 1080))
+        self.assertEqual(img.height, 1080)
+        self.assertAlmostEqual(img.width / img.height, 390 / 844, places=2)
+        self.assertEqual(img.box[0], (1920 - img.width) // 2)
+        tall = FakeImage(1170, 2532)
+        self.assertIs(build_site.phone_crop(tall), tall)
