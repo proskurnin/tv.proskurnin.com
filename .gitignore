@@ -6,6 +6,8 @@
 !/CHANGELOG.md
 !/ROADMAP.md
 !/docs/
+!/site/
+!/.github/
 !/tests/
 !/scripts/
 /scripts/*

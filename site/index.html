@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proskurnin TV — свой главный экран для Android TV</title>
+<meta name="description" content="Proskurnin TV — собственный лаунчер для домашнего Android TV: шесть главных приложений, погода, курсы, YouTube, подбор фильмов с AI и пульт в телефоне.">
+<link rel="canonical" href="https://tv.proskurnin.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Proskurnin TV">
+<meta property="og:description" content="Свой главный экран для обычного телевизора на Android TV.">
+<meta property="og:url" content="https://tv.proskurnin.com/">
+<meta name="theme-color" content="#0b0f16">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<script type="application/json" id="site-data"><!--DATA--></script>
+<script src="/assets/app.js" defer></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="brand nav" href="#top" aria-label="Proskurnin TV">
+    <span class="squares" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="word">PROSKURNIN <small>TV</small></span>
+  </a>
+  <nav class="menu" aria-label="Разделы" data-t-aria="menu">
+    <a class="nav" href="#features" data-t="m1">Возможности</a>
+    <a class="nav" href="#remote" data-t="m2">Пульт</a>
+    <a class="nav" href="#log" data-t="m3">Как делался</a>
+    <a class="nav" href="#limits" data-t="m4">Границы</a>
+  </nav>
+  <div class="bar-r">
+    <time id="clock" aria-live="off"></time>
+    <button class="lang nav" id="lang" type="button" aria-label="English">EN</button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="kicker" data-t="kicker">Лаунчер для Android TV</p>
+      <h1 data-t="h1">Свой главный экран для обычного телевизора</h1>
+      <p class="lead" data-t="lead">Proskurnin TV заменяет стандартный главный экран: шесть любимых приложений, погода, курсы, YouTube, подбор фильмов с AI и пульт в телефоне. Сделан под один конкретный телевизор.</p>
+      <div class="cta">
+        <a class="btn nav" href="#features" data-t="cta1">Что умеет</a>
+        <a class="btn ghost nav" href="https://github.com/proskurnin/tv.proskurnin.com" target="_blank" rel="noopener" data-t="cta2">Исходники на GitHub ↗</a>
+      </div>
+    </div>
+    <figure class="tv">
+      <div class="tv-frame"><div class="screen" data-shot="home"></div></div>
+      <div class="stand" aria-hidden="true"></div>
+      <figcaption data-t="cap-home">Главный экран Proskurnin TV</figcaption>
+    </figure>
+  </section>
+
+  <section class="facts" aria-label="Цифры проекта" data-t-aria="facts">
+    <div class="fact"><b id="f-releases">—</b><span data-t="f1">выпусков лаунчера в журнале</span></div>
+    <div class="fact"><b id="f-days">—</b><span data-t="f2">дня от первых опытов до текущей версии</span></div>
+    <div class="fact"><b id="f-version">—</b><span data-t="f3">текущая версия · пульт <span id="f-remote">—</span></span></div>
+    <div class="fact"><b>0</b><span data-t="f4">ключей API внутри приложения — они на сервере</span></div>
+  </section>
+
+  <section class="sec" id="features">
+    <header class="sec-head">
+      <p class="kicker"><span class="num">01</span> <span data-t="s1k">Главный экран</span></p>
+      <h2 data-t="s1h">Всё нужное — в одном ряду</h2>
+      <p data-t="s1p">Выберите плитку мышкой или стрелками и нажмите Enter — как на пульте.</p>
+    </header>
+    <div class="tiles">
+      <button class="tile nav" type="button" data-f="apps" data-shot-id="home-app-menu" style="--c:#00A9F4"><b data-t="t-apps">Шесть главных</b><span data-t="t-apps-s">Любимые приложения в одном ряду</span><p class="more" data-t="t-apps-d">В главном ряду — до шести приложений, остальные открываются стрелкой вниз. Долгий OK на плитке открывает меню: переместить, заменить, убрать с главного экрана или спрятать в папку «Прочее». Порядок сохраняется.</p></button>
+      <button class="tile nav" type="button" data-f="other" data-shot-id="folder-other" style="--c:#304FFE"><b data-t="t-other">«Прочее»</b><span data-t="t-other-s">Папка для лишнего</span><p class="more" data-t="t-other-d">Системные и редко нужные приложения уходят в «Прочее»: они остаются установленными и работают, но не мешают в списках. Вернуть приложение можно из той же папки.</p></button>
+      <button class="tile nav" type="button" data-f="weather" data-shot-id="weather" style="--c:#00BF55"><b data-t="t-weather">Погода</b><span data-t="t-weather-s">С отметкой актуальности</span><p class="more" data-t="t-weather-d">Погода приходит из Open-Meteo, при сбое — из wttr.in, у каждого источника свой маршрут. Под ней указано время данных поставщика, а не время запроса: видно, насколько они свежие.</p></button>
+      <button class="tile nav" type="button" data-f="rates" data-shot-id="rates" style="--c:#FFD600"><b data-t="t-rates">Курсы</b><span data-t="t-rates-s">USD, EUR, CNY и BTC</span><p class="more" data-t="t-rates-d">Доллар, евро, юань и биткоин в долларах: изменение к предыдущему дню и графики за 7 дней прямо на главном экране.</p></button>
+      <button class="tile nav" type="button" data-f="youtube" data-shot-id="home" style="--c:#FF1744"><b data-t="t-yt">YouTube</b><span data-t="t-yt-s">Счётчик и быстрый запуск</span><p class="more" data-t="t-yt-d">Счётчик подписчиков канала на главном экране — через доступ к YouTube только на чтение. SmartTube запускается из главного ряда; если приложения нет, лаунчер так и скажет.</p></button>
+      <button class="tile nav" type="button" data-f="movies" data-shot-id="movie-pick" style="--c:#FF7900"><b data-t="t-movies">Что посмотреть</b><span data-t="t-movies-s">Подбор фильма словами</span><p class="more" data-t="t-movies-d">Опишите, что хочется посмотреть, словами или голосом. AI вместе с базой TMDB предлагает три карточки с годом, рейтингом и длительностью, полный список — по запросу. «Где смотреть» показывает кинотеатры по данным TMDB и JustWatch.</p></button>
+      <button class="tile nav" type="button" data-f="ai" data-shot-id="assistant" style="--c:#AA00FF"><b data-t="t-ai">Диалог с AI</b><span data-t="t-ai-s">Вопрос голосом — ответ на экране</span><p class="more" data-t="t-ai-d">Разговор с AI на экране телевизора. Вопрос задаётся с пульта в телефоне — голосом или текстом. Ключи API хранятся на сервере, а не в приложении.</p></button>
+      <button class="tile nav" type="button" data-f="bg" data-shot-id="settings-background" style="--c:#00A9F4"><b data-t="t-bg">Фоны</b><span data-t="t-bg-s">Утро, день, вечер, ночь</span><p class="more" data-t="t-bg-d">Пейзажи меняются по времени суток с плавным переходом: наборы «Горы и озёра» и «Море», своё расписание или фиксированный период. Фотографии встроены в приложение и работают без сети. Фон этого сайта меняется так же.</p></button>
+      <button class="tile nav" type="button" data-f="dream" data-shot-id="settings-screensaver" style="--c:#00BF55"><b data-t="t-dream">Заставка</b><span data-t="t-dream-s">Видео без интернета</span><p class="more" data-t="t-dream-d">Заставка держит до пяти роликов в локальном кэше (до 300 МБ) и обновляет их в фоне, поэтому запускается сразу и не зависит от сети.</p></button>
+      <button class="tile nav" type="button" data-f="power" data-shot-id="power-menu" style="--c:#FF1744"><b data-t="t-power">Питание</b><span data-t="t-power-s">Своё меню из трёх действий</span><p class="more" data-t="t-power-d">Вместо системного окна по удержанию Power открывается собственное меню из трёх действий в стиле лаунчера. Его можно отключить в настройках — тогда вернётся системное.</p></button>
+      <button class="tile nav" type="button" data-f="boot" data-shot-id="boot" style="--c:#304FFE"><b data-t="t-boot">Загрузка</b><span data-t="t-boot-s">PROSKURNIN · TV SYSTEM</span><p class="more" data-t="t-boot-d">Телевизор включается с собственной заставкой: белый экран, надпись PROSKURNIN · TV SYSTEM и семь цветных квадратов, которые плавно появляются и мерцают по очереди.</p></button>
+      <button class="tile nav" type="button" data-f="home" data-shot-id="home" style="--c:#FF7900"><b data-t="t-home">Кнопка Home</b><span data-t="t-home-s">Свой экран и прежний</span><p class="more" data-t="t-home-d">Короткое нажатие Home открывает Proskurnin TV, долгое — прежний главный экран Google TV. Привычные системные экраны остаются под рукой.</p></button>
+    </div>
+  </section>
+
+  <section class="sec remote" id="remote">
+    <div class="remote-text">
+      <header class="sec-head">
+        <p class="kicker"><span class="num">02</span> <span data-t="s2k">Пульт с телефона</span></p>
+        <h2 data-t="s2h">Пульт — в браузере телефона</h2>
+        <p data-t="s2p">Без отдельного приложения: страница открывается по QR-коду с экрана телевизора.</p>
+      </header>
+      <ul class="points">
+        <li data-t="r1">Только домашняя сеть: порт наружу не открыт, облака нет.</li>
+        <li data-t="r2">Подключение по QR-коду и коду с экрана, телефон подтверждается на телевизоре.</li>
+        <li data-t="r3">Стрелки, OK, громкость, быстрый запуск приложений и ввод текста в поле на ТВ.</li>
+        <li data-t="r4">Голос записывается только по нажатию, до 30 секунд. Распознанную фразу можно поправить перед отправкой.</li>
+        <li data-t="r5">Три режима голоса: «Поговорим», «Найти фильм» и «В поле ТВ».</li>
+      </ul>
+    </div>
+    <div class="phones">
+      <figure class="phone"><div class="phone-frame"><div class="screen tall" data-shot="remote-main"></div></div><figcaption data-t="cap-remote1">Кнопки и быстрый запуск</figcaption></figure>
+      <figure class="phone"><div class="phone-frame"><div class="screen tall" data-shot="remote-voice"></div></div><figcaption data-t="cap-remote2">Голос: фразу можно поправить</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="log">
+    <header class="sec-head">
+      <p class="kicker"><span class="num">03</span> <span data-t="s3k">Как делался</span></p>
+      <h2 data-t="s3h">Каждое изменение — версия, проверка и откат</h2>
+      <p data-t="s3p">Журнал ниже собирается из CHANGELOG проекта автоматически. Листайте стрелками ← →, Enter — подробнее.</p>
+    </header>
+    <ul class="rules">
+      <li data-t="p1"><b>Ключи — на сервере.</b> В приложении нет ни одного ключа API: запросы идут через свой шлюз.</li>
+      <li data-t="p2"><b>Интерфейс не ждёт сеть.</b> Фон, погода и курсы грузятся в фоне и останавливаются, когда экран скрыт.</li>
+      <li data-t="p3"><b>Сначала прочитать, потом менять.</b> Перед любым изменением телевизора — диагностика только чтением и копия исходного состояния.</li>
+      <li data-t="p4"><b>Проверено — значит проверено на ТВ.</b> Эмуляция не выдаётся за проверку физическим пультом.</li>
+    </ul>
+    <div class="log" id="releases" role="list" aria-label="Выпуски" data-t-aria="releases"></div>
+  </section>
+
+  <section class="sec two" id="limits">
+    <div>
+      <header class="sec-head"><p class="kicker"><span class="num">04</span> <span data-t="s4k">Границы</span></p><h2 data-t="s4h">Честно о том, чего нет</h2></header>
+      <ul class="points">
+        <li data-t="l1">Сделано под один телевизор на Android 9 (плата m7332). Это не прошивка для всех: на другой модели запускать нельзя.</li>
+        <li data-t="l2">Интерфейс работает в Full HD, 4K-панель получает растянутую картинку. Настоящий 4K пока исследуется.</li>
+        <li data-t="l3">Выключение из своего меню работает, а после перезагрузки телевизор пока ждёт физической кнопки Power.</li>
+        <li data-t="l4">Прямого перехода к фильму в онлайн-кинотеатре ещё нет — лаунчер показывает, где фильм доступен.</li>
+      </ul>
+    </div>
+    <div>
+      <header class="sec-head"><p class="kicker"><span class="num">05</span> <span data-t="s5k">Дальше</span></p><h2 data-t="s5h">Что в планах</h2></header>
+      <ul class="points next">
+        <li data-t="n1">Интерфейс в 4K с переключателем Full HD / 4K и автоматическим возвратом.</li>
+        <li data-t="n2">Перезагрузка без физической кнопки Power.</li>
+        <li data-t="n3">Каталог скачиваемых фонов с лицензиями и лимитом места.</li>
+        <li data-t="n4">Переход из подбора прямо к фильму в кинотеатре.</li>
+        <li data-t="n5">Точнее подбор: отрицания, длительность, язык, мультфильм или фильм.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p data-t="foot1">Proskurnin TV — личный проект для домашнего телевизора. <a class="nav" href="https://github.com/proskurnin/tv.proskurnin.com" target="_blank" rel="noopener">GitHub ↗</a> · <a class="nav" href="https://proskurnin.ru/" target="_blank" rel="noopener">proskurnin.ru ↗</a></p>
+  <p class="credit" id="bg-credit"></p>
+  <p class="made">made with <span class="heart">♥</span> by Roman A. Proskurnin</p>
+</footer>
+
+<p class="hint" aria-hidden="true"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> <span data-t="hint1">выбор</span> · <kbd>Enter</kbd> <span data-t="hint2">открыть</span> · <kbd>Esc</kbd> <span data-t="hint3">назад</span></p>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <div class="dlg-shot"></div>
+  <div class="dlg-body">
+    <h3 id="dlg-title"></h3>
+    <div class="dlg-text"></div>
+    <button class="btn nav" type="button" id="dlg-close" data-t="close">Назад</button>
+  </div>
+</dialog>
+</body>
+</html>

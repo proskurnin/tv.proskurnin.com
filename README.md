@@ -9,6 +9,7 @@
 - [CHANGELOG.md](CHANGELOG.md) — выпуски и проверенные изменения.
 - [ROADMAP.md](ROADMAP.md) — план и незавершённые проверки.
 - [AGENTS.md](AGENTS.md) — обязательные правила обновления проекта.
+- [Сайт проекта](docs/SITE.md) — https://tv.proskurnin.com/: исходники в `site/`, сборка `scripts/build-site.py`, выкладка из GitHub Actions.
 - [Снимки экранов](docs/SCREENSHOTS.md) — ТЗ на съёмку интерфейса, хранение в `docs/screenshots/` и обновление вместе с выпусками.
 - [Загрузочная заставка](docs/BOOT_BRANDING.md) — оформление PROSKURNIN TV SYSTEM, ограничения и откат.
 - [Порядок приложений и «Прочее»](docs/APPS_LAYOUT.md) — меню долгого OK, сортировка, цветные подложки и откат.
