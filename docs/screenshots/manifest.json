@@ -320,6 +320,52 @@
           "reason": "область одноразового кода сопряжения"
         }
       ]
+    },
+    "weather": {
+      "file": "weather.png",
+      "sha256": "d4a68809637dac313ddca4894ee25e129e829f1d86be949ef1feeb35a78c999b",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T14:33:07+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
+    },
+    "settings-screensaver": {
+      "file": "settings-screensaver.png",
+      "sha256": "acf0c589a373129d7982cdd2ecc4139d0fa713422e34a7dadf94900f0fca06ae",
+      "width": 1920,
+      "height": 1080,
+      "capturedAt": "2026-11-13T15:04:24+03:00",
+      "source": "tv",
+      "launcherVersion": "1.44.3",
+      "launcherVersionCode": 82,
+      "remoteVersion": "1.2",
+      "remoteVersionCode": 4,
+      "masks": [
+        {
+          "rect": [
+            80,
+            75,
+            590,
+            55
+          ],
+          "reason": "название и счётчик личного YouTube-профиля, видимые на фоновом домашнем экране"
+        }
+      ]
     }
   }
 }

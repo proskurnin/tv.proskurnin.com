@@ -117,7 +117,7 @@ def validate_public(path, expected_size=None):
 
 
 def effective_masks(spec, data):
-    launcher_backdrop = {"home", "home-app-menu", "rates", "settings", "settings-background", "weather", "settings-appearance", "home-move"}
+    launcher_backdrop = {"home", "home-app-menu", "rates", "settings", "settings-background", "weather", "settings-appearance", "settings-screensaver", "home-move"}
     common = list(data.get("commonMasks", [])) if spec.get("id") in launcher_backdrop else []
     return common + list(spec.get("masks", []))
 

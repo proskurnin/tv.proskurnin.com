@@ -372,7 +372,19 @@
       "priority": "P3",
       "kind": "tv",
       "title": "Настройки заставки",
-      "steps": [],
+      "steps": [
+        "HOME",
+        "OPEN_SETTINGS",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN",
+        "DOWN"
+      ],
       "expected": [],
       "forbidden": [],
       "masks": []
