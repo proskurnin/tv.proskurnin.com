@@ -28,7 +28,7 @@ PRIVATE = ROOT / "private" / "screenshots"
 MAX_BYTES = 3_000_000
 ADB = os.environ.get("ADB", "/Users/roman/Library/Android/sdk/platform-tools/adb")
 CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
-SYNTHETIC_KEYS = {"movie_space", "assistant_evening", "remote_voice_space", "keyboard_space"}
+SYNTHETIC_KEYS = {"movie_back_to_future", "movie_space", "assistant_evening", "remote_voice_space", "keyboard_space"}
 
 
 def catalog():

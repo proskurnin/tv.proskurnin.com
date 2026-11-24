@@ -12,12 +12,14 @@ public final class PowerBridge {
    run("/system/bin/sync");
    if(run("/system/bin/reboot","-p","userrequested")!=0)throw new IOException("init shutdown rejected");
   }else if(command.equals("REBOOT")){
-   // Normal Android shutdown sequence, but explicit reason rather than menu's userrequested.
-   if(run("/system/bin/svc","power","reboot","adb")!=0)throw new IOException("reboot rejected or timed out");
+   // Candidate Sber adapter: normal Android shutdown with native one-time power-on reason.
+   String reason=SberRebootPolicy.reason(Build.MODEL,Build.DEVICE,Build.FINGERPRINT);
+   if(run("/system/bin/svc","power","reboot",reason)!=0)throw new IOException("reboot rejected or timed out");
   }
  }catch(Exception e){android.util.Log.e("ProskurninPower","Power action failed; no automatic retry");}finally{pending=false;}}
  public static void main(String[] args)throws Exception{
-  if(android.os.Process.myUid()!=0)throw new SecurityException("root service required");Looper.prepareMainLooper();Class<?> at=Class.forName("android.app.ActivityThread");Object thread=at.getMethod("systemMain").invoke(null);Context c=(Context)at.getMethod("getSystemContext").invoke(thread);pm=c.getPackageManager();
+  if(android.os.Process.myUid()!=0)throw new SecurityException("root service required");HistoryBridge.prepare();Looper.prepareMainLooper();Class<?> at=Class.forName("android.app.ActivityThread");Object thread=at.getMethod("systemMain").invoke(null);Context c=(Context)at.getMethod("getSystemContext").invoke(thread);pm=c.getPackageManager();
+  HistoryBridge.start();
   LocalServerSocket server=new LocalServerSocket("proskurnin.power.v1");android.util.Log.i("ProskurninPower","Ready; only signed launcher accepted");
   while(true){try(LocalSocket client=server.accept()){client.setSoTimeout(1000);if(!allowed(client.getPeerCredentials().getUid())){client.getOutputStream().write("DENIED\n".getBytes("US-ASCII"));continue;}
    StringBuilder b=new StringBuilder();boolean complete=false;int ch;while(b.length()<8&&(ch=client.getInputStream().read())!=-1){if(ch=='\n'){complete=true;break;}if(ch<'A'||ch>'Z')break;b.append((char)ch);}String command=complete?b.toString():"";String result="DENIED";

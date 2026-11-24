@@ -23,7 +23,7 @@ final class MovieClient {
    int id=item.optInt("id");if(id<=0||!seen.add(id))continue;
    JSONObject detail=tmdb(context,"/movie/"+id,"append_to_response=keywords");
    String date=detail.optString("release_date");
-   exact.put(new JSONObject().put("id",id).put("title",shortText(detail.optString("title",title),160)).put("original_title",shortText(detail.optString("original_title",original),160)).put("year",date.length()>=4?date.substring(0,4):"").put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("poster_path",detail.optString("poster_path","")).put("reason","Точное совпадение названия"));
+   exact.put(new JSONObject().put("id",id).put("title",shortText(detail.optString("title",title),160)).put("original_title",shortText(detail.optString("original_title",original),160)).put("year",date.length()>=4?date.substring(0,4):"").put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("overview",shortText(detail.optString("overview"),1800)).put("poster_path",detail.optString("poster_path","")).put("reason","Точное совпадение названия"));
   }
   return exact.length()==0?null:exact;
  }
@@ -46,7 +46,7 @@ final class MovieClient {
  }
  static JSONObject compact(JSONObject detail,String reason)throws Exception{
   boolean animation=false;JSONArray genres=detail.optJSONArray("genres");if(genres!=null)for(int i=0;i<genres.length();i++)if(genres.getJSONObject(i).optInt("id")==16)animation=true;
-  return new JSONObject().put("animation",animation).put("id",detail.getInt("id")).put("title",detail.getString("title")).put("original_title",detail.optString("original_title",detail.getString("title"))).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("poster_path",detail.optString("poster_path","")).put("reason",reason);
+  return new JSONObject().put("animation",animation).put("id",detail.getInt("id")).put("title",detail.getString("title")).put("original_title",detail.optString("original_title",detail.getString("title"))).put("year",detail.optString("release_date","").split("-")[0]).put("runtime",detail.optInt("runtime",0)).put("rating",detail.optDouble("vote_average",0)).put("overview",shortText(detail.optString("overview"),1800)).put("poster_path",detail.optString("poster_path","")).put("reason",reason);
  }
  static JSONArray enrich(Context context,JSONObject proposal,String query,String typeOverride,Alive alive)throws Exception{
   JSONArray candidates=new JSONArray();HashMap<Integer,JSONObject> details=new HashMap<>();HashSet<Integer> seen=new HashSet<>();long deadline=android.os.SystemClock.elapsedRealtime()+90000;
@@ -76,12 +76,16 @@ final class MovieClient {
   if(!alive.get())throw new InterruptedException();return result;
  }
  static String shortText(String s,int limit){return s.length()<=limit?s:s.substring(0,limit);}
- static Bitmap poster(Context context,String path)throws Exception{
+ static Bitmap poster(Context context,String path,android.os.CancellationSignal signal)throws Exception{
   if(!path.matches("/[A-Za-z0-9_-]+\\.jpg"))return null;
+  signal.throwIfCanceled();File dir=new File(context.getCacheDir(),"movie-posters");dir.mkdirs();File file=new File(dir,path.substring(1));
+  if(file.isFile()&&file.length()<=1048576){Bitmap saved=BitmapFactory.decodeFile(file.getPath());if(saved!=null){file.setLastModified(System.currentTimeMillis());return saved;}file.delete();}
   HttpURLConnection c=(HttpURLConnection)new URL(ApiEndpoint.validate(ApiClient.privateJson(context,"api-client.json").getString("base_url"))+"tmdb/poster"+path).openConnection();
-  try{c.setRequestProperty("Authorization","Bearer "+ApiClient.privateJson(context,"api-client.json").getString("token"));c.setConnectTimeout(4000);c.setReadTimeout(16000);c.setInstanceFollowRedirects(false);if(c.getResponseCode()!=200)return null;
-   ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(out.size()+n>1048576)return null;out.write(b,0,n);}}
-   BitmapFactory.Options options=new BitmapFactory.Options();options.inSampleSize=2;options.inPreferredConfig=Bitmap.Config.RGB_565;byte[] bytes=out.toByteArray();return BitmapFactory.decodeByteArray(bytes,0,bytes.length,options);
-  }finally{c.disconnect();}
+  signal.setOnCancelListener(()->c.disconnect());
+  try{signal.throwIfCanceled();c.setRequestProperty("Authorization","Bearer "+ApiClient.privateJson(context,"api-client.json").getString("token"));c.setConnectTimeout(4000);c.setReadTimeout(16000);c.setInstanceFollowRedirects(false);if(c.getResponseCode()!=200)return null;
+   ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){signal.throwIfCanceled();if(out.size()+n>1048576)return null;out.write(b,0,n);}}
+   BitmapFactory.Options options=new BitmapFactory.Options();options.inSampleSize=1;options.inPreferredConfig=Bitmap.Config.RGB_565;byte[] bytes=out.toByteArray();Bitmap image=BitmapFactory.decodeByteArray(bytes,0,bytes.length,options);signal.throwIfCanceled();
+   if(image!=null)synchronized(MovieClient.class){File temp=File.createTempFile("poster-",".tmp",dir);try{try(FileOutputStream stream=new FileOutputStream(temp)){stream.write(bytes);}temp.renameTo(file);}finally{temp.delete();}File[] files=dir.listFiles();if(files!=null){Arrays.sort(files,(a,b)->Long.compare(a.lastModified(),b.lastModified()));long total=0;for(File f:files)total+=f.length();for(File f:files)if(total>20971520){long size=f.length();if(f.delete())total-=size;}}}return image;
+  }finally{signal.setOnCancelListener(null);c.disconnect();}
  }
 }

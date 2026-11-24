@@ -39,3 +39,15 @@
 Android даёт обычному приложению рисовать свой интерфейс, запускать доступные Activity, использовать DreamService и запрашивать SpeechRecognizer. Глобальная инъекция произвольных кнопок/перезапись загрузчика — другие права. Поэтому пакет сначала использует поддерживаемые интерфейсы; дополнительные возможности включаются отдельно, без отключения системных служб.
 
 Первичные источники: [TV-приложения Android](https://developer.android.com/training/tv/get-started/create), [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService), [DreamService](https://developer.android.com/reference/android/service/dreams/DreamService), [TV Input](https://developer.android.com/reference/android/media/tv/TvInputManager). Наличие API не заменяет тест конкретной прошивки.
+
+### Локальная история1.46.0
+
+Общий интерфейс журнала входит в оба профиля. Чтение закрытых источников реализовано отдельным помощником только для проверенного Sber SaluteTV/m7332_eu; на root-free Xiaomi/другом ТВ показывается недоступность адаптера. Полная история аккаунтов не заявлена.
+
+1.47.0: общий поиск с постером, сюжетом, рейтингом TMDB и большой карточкой; публичный Android TV Search/HTTPS переход зависит от установленного кинотеатра. Иви проверен на Sber, Xiaomi не обновлялся; проверка8 сервисов не завершена.
+
+1.48.0: общая сетка всех8 кинотеатров с независимым поиском, карточкой/переходом/свидетельством каталога; адаптеры публичного поиска Zona/LazyMedia/Кинопоиск работают без root. Конкретная доступность зависит от версии приложения/сети, Xiaomi не установлен.
+
+###1.48.1 — возврат Sber после сна
+
+SberWakeGuard активен только в Standard на SaluteTV/m7332_eu. Universal/Xiaomi исключены проверкой профиля/модели; их HomeKeyService и рекомендации Google не меняются. Сборка Universal не означает установку или аппаратную проверку Xiaomi.

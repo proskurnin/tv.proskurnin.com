@@ -9,7 +9,7 @@ final class ApiClient {
  }
  static JSONObject request(Context context,String endpoint,JSONObject body)throws Exception{return request(context,endpoint,body,null);}
  static JSONObject request(Context context,String endpoint,JSONObject body,android.os.CancellationSignal cancel)throws Exception{
-  if(!endpoint.startsWith("youtube/channel?interval=")&&!endpoint.equals("ai/movies")&&!endpoint.equals("ai/chat")&&!endpoint.equals("ai/speech")&&!endpoint.startsWith("tmdb/")&&!endpoint.equals("dream/catalog"))throw new IOException("API");
+  if(!endpoint.startsWith("youtube/channel?interval=")&&!endpoint.equals("ai/movies")&&!endpoint.equals("ai/cinema")&&!endpoint.equals("ai/chat")&&!endpoint.equals("ai/speech")&&!endpoint.startsWith("tmdb/")&&!endpoint.equals("dream/catalog"))throw new IOException("API");
   JSONObject config=privateJson(context,"api-client.json");String base=config.getString("base_url");
   ApiEndpoint.validate(base);
   HttpURLConnection c=(HttpURLConnection)new URL(base+endpoint).openConnection();

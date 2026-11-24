@@ -40,6 +40,16 @@ class MovieContract(unittest.TestCase):
   self.assertIn('append_to_response=keywords',tmdb_validate('/movie/1','language=ru-RU&append_to_response=keywords')[0])
   for path,q in [('/movie/1','append_to_response=videos'),('/search/movie','query=x&append_to_response=keywords')]:
    with self.assertRaises(InvalidRequest):tmdb_validate(path,q)
+class ExplicitConstraints(unittest.TestCase):
+ def test_runtime_unknown_and_animation_cannot_slip_through(self):
+  from movie_contract import metadata_matches
+  c=MovieContract().candidate()
+  self.assertTrue(metadata_matches('Фильмы до 90 минут',c))
+  self.assertFalse(metadata_matches('Фильмы до 60 минут',c))
+  self.assertFalse(metadata_matches('Фильмы до 90 минут',dict(c,runtime=0)))
+  self.assertFalse(metadata_matches('Фильмы, не мультфильмы',dict(c,genres=['Animation'])))
+  self.assertFalse(metadata_matches('Только мультфильмы',c))
+
 class MovieWorkerCache(unittest.TestCase):
  def test_verified_cache_preserves_only_central_matches(self):
   import tempfile,json

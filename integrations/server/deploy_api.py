@@ -52,6 +52,7 @@ def main():
 Match all
 ''')
     remote(RU,'/usr/sbin/sshd -t && systemctl reload ssh')
+    put(US,'/opt/proskurnin-worker/cinema_contract.py',(ROOT/'cinema_contract.py').read_text())
     put(US,'/opt/proskurnin-worker/movie_contract.py',(ROOT/'movie_contract.py').read_text())
     put(US,'/opt/proskurnin-worker/tmdb_proxy.py',(ROOT/'tmdb_proxy.py').read_text())
     put(US,'/opt/proskurnin-worker/transcription.py',(ROOT/'transcription.py').read_text())
@@ -99,6 +100,7 @@ MemoryMax=96M
 WantedBy=multi-user.target
 ''')
     remote(US,'sudo -n systemctl daemon-reload && sudo -n systemctl enable proskurnin-us-api proskurnin-api-tunnel && sudo -n systemctl restart proskurnin-us-api proskurnin-api-tunnel')
+    put(RU,'/opt/proskurnin-api/cinema_contract.py',(ROOT/'cinema_contract.py').read_text())
     put(RU,'/opt/proskurnin-api/movie_contract.py',(ROOT/'movie_contract.py').read_text())
     put(RU,'/opt/proskurnin-api/tmdb_proxy.py',(ROOT/'tmdb_proxy.py').read_text())
     put(RU,'/opt/proskurnin-api/transcription.py',(ROOT/'transcription.py').read_text())
@@ -129,7 +131,7 @@ WantedBy=multi-user.target
 ''')
     put(RU,'/etc/nginx/conf.d/proskurnin-api-limits.conf','limit_req_zone $binary_remote_addr zone=proskurnin_yt:1m rate=30r/m;\nlimit_req_zone $binary_remote_addr zone=proskurnin_ai:1m rate=6r/m;\nlimit_req_zone $binary_remote_addr zone=proskurnin_tmdb:1m rate=120r/m;\n')
     snippet=''
-    for path,zone in [('youtube/channel','proskurnin_yt'),('ai/movies','proskurnin_ai'),('ai/chat','proskurnin_ai'),('ai/speech','proskurnin_ai'),('ai/transcribe','proskurnin_ai')]:
+    for path,zone in [('youtube/channel','proskurnin_yt'),('ai/movies','proskurnin_ai'),('ai/chat','proskurnin_ai'),('ai/cinema','proskurnin_ai'),('ai/speech','proskurnin_ai'),('ai/transcribe','proskurnin_ai')]:
         snippet+='''location = /tv-api/v1/'''+path+''' {
     limit_req zone='''+zone+''' burst=3 nodelay;
     limit_req_status 429;

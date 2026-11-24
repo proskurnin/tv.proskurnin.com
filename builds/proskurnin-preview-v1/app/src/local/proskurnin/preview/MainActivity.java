@@ -1,6 +1,7 @@
 package local.proskurnin.preview;
 import android.content.pm.*;import android.net.*;import android.text.TextUtils;import android.app.*;import android.os.*;import android.content.*;import android.graphics.*;import android.graphics.drawable.*;import android.view.*;import android.widget.*;import java.util.*;import java.text.*;import java.net.*;import java.io.*;import org.json.*;
 public class MainActivity extends Activity {
+ LocalWatchStore.Job localWatchJob;
  static final int CAPTION_SIZE=17;
  static final int REQUEST_UNINSTALL=42;
  // One translucent surface for toolbar buttons and currency cards, including focused buttons.
@@ -27,17 +28,36 @@ public class MainActivity extends Activity {
  AppArrangement arrangement = new AppArrangement(), beforeMove;
  boolean inOther=false, moving=false, arrangementLoaded=false;
  int folderReturnIndex=0, moveStart=0;
- final AppArtwork.Loader artworkLoader=new AppArtwork.Loader();
+ static final AppArtwork.Loader artworkLoader=new AppArtwork.Loader();
  static class Entry {String name,pkg;AppArtwork icon;Entry(String n,String p,AppArtwork b){name=n;pkg=p;icon=b;}}
  AppArtwork appIcon(String pkg){return artworkLoader.peek(pkg);}
- void refreshApps(){if(loadingApps)return;loadingApps=true;new Thread(()->{
-  ArrayList<Entry> result=new ArrayList<>();HashSet<String> seen=new HashSet<>();seen.add(getPackageName());
-  for(String cat:new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER,Intent.CATEGORY_LAUNCHER})for(ResolveInfo r:getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(cat),0)){String pkg=r.activityInfo.packageName;if(r.activityInfo.enabled&&r.activityInfo.applicationInfo.enabled&&seen.add(pkg))result.add(new Entry(r.loadLabel(getPackageManager()).toString(),pkg,artworkLoader.load(this,r.activityInfo)));}
-  artworkLoader.retain(seen);
-  result.sort((a,b)->java.text.Collator.getInstance(new Locale("ru")).compare(a.name,b.name));
-  h.post(()->{allApps=result;loadingApps=false;if(!moving){ArrayList<String> available=new ArrayList<>();for(Entry e:allApps)available.add(e.pkg);arrangement.reconcile(available);saveArrangement();}else rebuildExtras();if(active)screen.invalidate();});
- },"launcher-apps").start();}
- Entry entry(String pkg){for(Entry e:allApps)if(e.pkg.equals(pkg))return e;String label=prefs.getString("favorite_label_"+pkg,pkg);try{label=getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(pkg,0)).toString();}catch(Exception ignored){}return new Entry(label,pkg,appIcon(pkg));}
+ volatile int appsGeneration;
+ final java.util.concurrent.ExecutorService appsWorker=java.util.concurrent.Executors.newSingleThreadExecutor();
+ void publishArtwork(int token,String pkg,AppArtwork artwork){h.post(()->{
+  if(!active||token!=appsGeneration)return;
+  for(Entry e:allApps)if(e.pkg.equals(pkg))e.icon=artwork;
+  for(Entry e:extras)if(e.pkg.equals(pkg))e.icon=artwork;
+  for(int i=0;i<pkgs.length;i++)if(pkgs[i].equals(pkg))icons[i]=artwork;
+  screen.invalidate();
+ });}
+ void refreshApps(){if(loadingApps||!active)return;loadingApps=true;final int token=++appsGeneration;final long artworkStarted=SystemClock.elapsedRealtime();
+  final LinkedHashSet<String> saved=new LinkedHashSet<>();saved.addAll(arrangement.home);saved.addAll(arrangement.apps);saved.addAll(arrangement.other);
+  appsWorker.execute(()->{try{
+   // Show every saved tile before asking PackageManager to discover or rasterize anything.
+   for(String pkg:saved){if(!active||token!=appsGeneration)return;AppArtwork art=artworkLoader.restore(this,pkg);if(art!=null)publishArtwork(token,pkg,art);}
+   h.post(()->{if(active&&token==appsGeneration)android.util.Log.i("ProskurninArtwork","cached tiles applied in "+(SystemClock.elapsedRealtime()-artworkStarted)+" ms");});
+   ArrayList<Entry> result=new ArrayList<>();ArrayList<ActivityInfo> activities=new ArrayList<>();HashSet<String> seen=new HashSet<>();seen.add(getPackageName());
+   for(String cat:new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER,Intent.CATEGORY_LAUNCHER})for(ResolveInfo r:getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(cat),0)){
+    if(!active||token!=appsGeneration)return;
+    String pkg=r.activityInfo.packageName;if(r.activityInfo.enabled&&r.activityInfo.applicationInfo.enabled&&seen.add(pkg)){result.add(new Entry(r.loadLabel(getPackageManager()).toString(),pkg,artworkLoader.peek(pkg)));activities.add(r.activityInfo);}
+   }
+   result.sort((a,b)->java.text.Collator.getInstance(new Locale("ru")).compare(a.name,b.name));
+   h.post(()->{if(!active||token!=appsGeneration)return;allApps=result;if(!moving){ArrayList<String> available=new ArrayList<>();for(Entry e:allApps)available.add(e.pkg);arrangement.reconcile(available);saveArrangement();}else rebuildExtras();screen.invalidate();});
+   for(ActivityInfo activity:activities){if(!active||token!=appsGeneration)return;AppArtwork art=artworkLoader.load(this,activity);publishArtwork(token,activity.packageName,art);}
+   if(active&&token==appsGeneration)artworkLoader.retain(this,seen);
+  }catch(RuntimeException ignored){}finally{h.post(()->{if(token==appsGeneration)loadingApps=false;});}});
+ }
+ Entry entry(String pkg){for(Entry e:allApps)if(e.pkg.equals(pkg))return e;String label=prefs.getString("favorite_label_"+pkg,pkg);return new Entry(label,pkg,appIcon(pkg));}
  ArrayList<String> readPackages(JSONArray array){ArrayList<String> result=new ArrayList<>();if(array!=null)for(int i=0;i<array.length();i++){String pkg=array.optString(i,"");if(!pkg.isEmpty()&&!pkg.equals(getPackageName())&&!result.contains(pkg))result.add(pkg);}return result;}
  void loadFavorites(){
   if(!arrangementLoaded){
@@ -48,7 +68,7 @@ public class MainActivity extends Activity {
   refreshFavoriteVisuals();
  }
  void rebuildExtras(){extras=new ArrayList<>();for(String pkg:inOther?arrangement.other:arrangement.apps)extras.add(entry(pkg));if(!inOther)extras.add(new Entry("Прочее",OTHER,null));extraIndex=Math.max(0,Math.min(extraIndex,extras.size()-1));}
- void refreshFavoriteVisuals(){pkgs=arrangement.home.toArray(new String[0]);names=new String[pkgs.length];icons=new AppArtwork[pkgs.length];installed=new boolean[pkgs.length];for(int i=0;i<pkgs.length;i++){Entry e=entry(pkgs[i]);names[i]=e.name;icons[i]=e.icon;installed[i]=launchIntent(pkgs[i])!=null;}selected=Math.max(0,Math.min(selected,pkgs.length-1));rebuildExtras();}
+ void refreshFavoriteVisuals(){pkgs=arrangement.home.toArray(new String[0]);names=new String[pkgs.length];icons=new AppArtwork[pkgs.length];installed=new boolean[pkgs.length];for(int i=0;i<pkgs.length;i++){Entry e=entry(pkgs[i]);names[i]=e.name;icons[i]=e.icon;installed[i]=e.icon!=null;for(Entry app:allApps)if(app.pkg.equals(pkgs[i]))installed[i]=true;}selected=Math.max(0,Math.min(selected,pkgs.length-1));rebuildExtras();}
  void saveArrangement(){
   refreshFavoriteVisuals();try{JSONObject data=new JSONObject();data.put("home",new JSONArray(arrangement.home));data.put("apps",new JSONArray(arrangement.apps));data.put("other",new JSONArray(arrangement.other));SharedPreferences.Editor edit=prefs.edit().putString("app_arrangement_v1",data.toString());for(Entry e:allApps)edit.putString("favorite_label_"+e.pkg,e.name);edit.apply();}catch(JSONException ignored){}screen.invalidate();
  }
@@ -115,10 +135,10 @@ public class MainActivity extends Activity {
 
  protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.hasCategory(Intent.CATEGORY_HOME)){confirmDown=false;finishMove(false);drawer=false;inOther=false;top=false;updateSpeedFocus();screen.invalidate();}}
  public void onBackPressed(){backToApps();}
- protected void onResume(){super.onResume();UniversalProfile.resumedHome(this);active=true;registerReceiver(phoneKeys,new IntentFilter("local.proskurnin.REMOTE_NAV"),"local.proskurnin.permission.REMOTE_AI",null);if(!timeReceiverRegistered){IntentFilter tf=new IntentFilter(Intent.ACTION_TIME_CHANGED);tf.addAction(Intent.ACTION_TIMEZONE_CHANGED);registerReceiver(timeReceiver,tf);timeReceiverRegistered=true;}statsReader=new DeviceStats(this);h.removeCallbacks(statsTick);h.post(statsTick);loadFavorites();watchNetwork();if(!wifiReceiverRegistered){registerReceiver(wifiSignalReceiver,new IntentFilter(android.net.wifi.WifiManager.RSSI_CHANGED_ACTION));wifiReceiverRegistered=true;}if(vpnToggle.pending){h.removeCallbacks(vpnCheck);h.post(vpnCheck);}scheduleStartupWork();refreshNetwork();for(int i=0;i<pkgs.length;i++)installed[i]=getPackageManager().getLeanbackLaunchIntentForPackage(pkgs[i])!=null||getPackageManager().getLaunchIntentForPackage(pkgs[i])!=null;h.post(tick);}
- protected void onPause(){unregisterReceiver(phoneKeys);confirmDown=false;finishMove(false);active=false;screen.stopShine();if(timeReceiverRegistered){unregisterReceiver(timeReceiver);timeReceiverRegistered=false;}if(wifiReceiverRegistered){unregisterReceiver(wifiSignalReceiver);wifiReceiverRegistered=false;}updateSpeedFocus();h.removeCallbacks(statsTick);unwatchNetwork();h.removeCallbacks(vpnCheck);generation++;h.removeCallbacks(tick);bg=null;previousBg=null;period="";super.onPause();}
+ protected void onResume(){super.onResume();localWatchJob=LocalWatchStore.refresh(this,null);UniversalProfile.resumedHome(this);active=true;registerReceiver(phoneKeys,new IntentFilter("local.proskurnin.REMOTE_NAV"),"local.proskurnin.permission.REMOTE_AI",null);if(!timeReceiverRegistered){IntentFilter tf=new IntentFilter(Intent.ACTION_TIME_CHANGED);tf.addAction(Intent.ACTION_TIMEZONE_CHANGED);registerReceiver(timeReceiver,tf);timeReceiverRegistered=true;}statsReader=new DeviceStats(this);h.removeCallbacks(statsTick);h.post(statsTick);loadFavorites();watchNetwork();if(!wifiReceiverRegistered){registerReceiver(wifiSignalReceiver,new IntentFilter(android.net.wifi.WifiManager.RSSI_CHANGED_ACTION));wifiReceiverRegistered=true;}if(vpnToggle.pending){h.removeCallbacks(vpnCheck);h.post(vpnCheck);}scheduleStartupWork();refreshApps();refreshNetwork();h.post(tick);}
+ protected void onPause(){if(localWatchJob!=null)localWatchJob.cancel();unregisterReceiver(phoneKeys);confirmDown=false;finishMove(false);active=false;appsGeneration++;loadingApps=false;screen.stopShine();if(timeReceiverRegistered){unregisterReceiver(timeReceiver);timeReceiverRegistered=false;}if(wifiReceiverRegistered){unregisterReceiver(wifiSignalReceiver);wifiReceiverRegistered=false;}updateSpeedFocus();h.removeCallbacks(statsTick);unwatchNetwork();h.removeCallbacks(vpnCheck);generation++;h.removeCallbacks(tick);bg=null;previousBg=null;period="";super.onPause();}
  final BroadcastReceiver phoneKeys=new BroadcastReceiver(){public void onReceive(Context c,Intent i){if(!active||!getWindow().getDecorView().hasWindowFocus())return;String command=i.getStringExtra("command");int key="UP".equals(command)?19:"DOWN".equals(command)?20:"LEFT".equals(command)?21:"RIGHT".equals(command)?22:"OK".equals(command)?23:"BACK".equals(command)?4:0;if(key==0)return;dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,key));dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,key));setResultCode(android.app.Activity.RESULT_OK);}};
- protected void onDestroy(){h.removeCallbacks(statsTick);statsWorker.shutdownNow();backgroundWorker.shutdownNow();super.onDestroy();}
+ protected void onDestroy(){h.removeCallbacks(statsTick);appsWorker.shutdownNow();statsWorker.shutdownNow();backgroundWorker.shutdownNow();super.onDestroy();}
  void watchNetwork(){if(networkCallback!=null)return;networkCallback=new ConnectivityManager.NetworkCallback(){void changed(){h.post(()->{if(active){refreshNetwork();if(networkTransport>0&&!connectedForRefresh){connectedForRefresh=true;weatherAt=-1;fetchWeather();}else if(networkTransport==0)connectedForRefresh=false;screen.invalidate();}});}public void onAvailable(Network n){changed();}public void onLost(Network n){changed();}public void onCapabilitiesChanged(Network n,NetworkCapabilities cap){changed();}};try{((ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE)).registerDefaultNetworkCallback(networkCallback);}catch(Exception e){networkCallback=null;}}
  void unwatchNetwork(){if(networkCallback!=null){try{((ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE)).unregisterNetworkCallback(networkCallback);}catch(Exception ignored){}networkCallback=null;}}
  void fetchRates(){long now=SystemClock.elapsedRealtime();if(!active||!startupWorkDue(2)||!prefs.getBoolean("currency_enabled",true)||ratesBusy||!ClockEstimate.due(now,ratesAttempt,300000))return;ratesAttempt=now;ratesBusy=true;new Thread(()->{try{CurrencyWidget.fetch(this);}finally{h.post(()->{ratesBusy=false;if(active)screen.invalidate();});}},"rates").start();}

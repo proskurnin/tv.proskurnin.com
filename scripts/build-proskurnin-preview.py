@@ -39,4 +39,6 @@ if not key.exists(): run(JAVA/'keytool','-genkeypair','-keystore',key,'-alias','
 apk = B/('ProskurninUniversal.apk' if args.profile == 'universal' else 'ProskurninXiaomiPreview.apk' if args.profile == 'xiaomi-preview' else 'ProskurninPreview.apk')
 run(BT/'apksigner','sign','--ks',key,'--ks-pass','pass:diagnostic','--out',apk,O/'aligned.apk')
 run(BT/'apksigner','verify','--min-sdk-version','28','--verbose',apk)
+# Keep failed build intermediates for diagnosis; discard only this successful run.
+shutil.rmtree(O)
 print(apk)

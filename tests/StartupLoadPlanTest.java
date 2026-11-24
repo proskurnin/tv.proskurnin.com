@@ -3,7 +3,7 @@ public class StartupLoadPlanTest {
  static void check(boolean ok,String name){if(!ok)throw new AssertionError(name);}
  public static void main(String[] args){
   long[] early=StartupLoadPlan.delays(1000);
-  check(early[0]==10000&&early[1]==25000&&early[2]==40000&&early[3]==55000,"startup tasks are staggered");
+  check(early[0]==0&&early[1]==25000&&early[2]==40000&&early[3]==55000,"artwork is immediate, network tasks stay staggered");
   long[] boundary=StartupLoadPlan.delays(179999);
   check(boundary[0]<boundary[1]&&boundary[1]<boundary[2]&&boundary[2]<boundary[3],"stagger remains before end of boot window");
   long[] normal=StartupLoadPlan.delays(180000);

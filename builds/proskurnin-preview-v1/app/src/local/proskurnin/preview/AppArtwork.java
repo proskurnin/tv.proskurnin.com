@@ -8,6 +8,8 @@ import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import java.util.Set;
+import java.io.*;
+import android.util.AtomicFile;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Local APK artwork. Loading and rasterization run on launcher-apps, never in onDraw. */
@@ -28,7 +30,48 @@ final class AppArtwork {
 
         AppArtwork peek(String pkg) { return cache.get(pkg); }
 
-        AppArtwork load(Context context, ActivityInfo activity) {
+        // One atomic record contains both metadata and PNG; interrupted writes retain the old image.
+        private File directory(Context context) {
+            File dir = new File(context.getCacheDir(), "app-artwork-v1");
+            dir.mkdirs(); return dir;
+        }
+        private File record(Context context, String pkg) {
+            if (!pkg.matches("[A-Za-z0-9_.]+")) throw new IllegalArgumentException("package");
+            return new File(directory(context), pkg + ".art");
+        }
+        synchronized AppArtwork restore(Context context, String pkg) {
+            AppArtwork existing = cache.get(pkg);
+            if (existing != null) return existing;
+            AtomicFile file = new AtomicFile(record(context, pkg));
+            try (DataInputStream in = new DataInputStream(file.openRead())) {
+                if (in.readInt() != 1) return null;
+                String revision = in.readUTF(); boolean banner = in.readBoolean(); int tint = in.readInt();
+                int length = in.readInt();
+                if (length <= 0 || length > 512 * 1024) return null;
+                byte[] bytes = new byte[length]; in.readFully(bytes);
+                BitmapFactory.Options bounds = new BitmapFactory.Options(); bounds.inJustDecodeBounds = true;
+                BitmapFactory.decodeByteArray(bytes, 0, length, bounds);
+                if (bounds.outWidth != (banner ? 320 : 144) || bounds.outHeight != (banner ? 180 : 144)) return null;
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, length);
+                if (bitmap == null) return null;
+                AppArtwork result = new AppArtwork(bitmap, banner, tint, revision);
+                cache.put(pkg, result); return result;
+            } catch (IOException | RuntimeException ignored) { return null; }
+        }
+        private void persist(Context context, String pkg, AppArtwork artwork) {
+            AtomicFile file = new AtomicFile(record(context, pkg)); FileOutputStream stream = null;
+            try {
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                if (!artwork.bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)) return;
+                if (bytes.size() > 512 * 1024) return;
+                stream = file.startWrite(); DataOutputStream out = new DataOutputStream(stream);
+                out.writeInt(1); out.writeUTF(artwork.revision); out.writeBoolean(artwork.banner);
+                out.writeInt(artwork.tint); out.writeInt(bytes.size()); bytes.writeTo(out); out.flush();
+                file.finishWrite(stream);
+            } catch (IOException | RuntimeException ignored) { if (stream != null) file.failWrite(stream); }
+        }
+
+        synchronized AppArtwork load(Context context, ActivityInfo activity) {
             PackageManager pm = context.getPackageManager();
             String pkg = activity.packageName;
             try {
@@ -55,16 +98,20 @@ final class AppArtwork {
                     try { result = render(pm.getApplicationIcon(pkg), false, revision); }
                     catch (PackageManager.NameNotFoundException | RuntimeException ignored) { }
                 }
-                if (result != null) cache.put(pkg, result);
-                else cache.remove(pkg);
+                if (result != null) { cache.put(pkg, result); persist(context, pkg, result); }
+                else return existing;
                 return result;
             } catch (PackageManager.NameNotFoundException | RuntimeException ignored) {
-                cache.remove(pkg);
-                return null;
+                return cache.get(pkg);
             }
         }
 
-        void retain(Set<String> installed) {
+        synchronized void retain(Context context, Set<String> installed) {
+            File[] files = directory(context).listFiles();
+            if (files != null) for (File file : files) {
+                String name = file.getName();
+                if (name.endsWith(".art") && !installed.contains(name.substring(0, name.length()-4))) new AtomicFile(file).delete();
+            }
             // Do not recycle: the previous UI snapshot may still refer to these bitmaps.
             for (String pkg : cache.keySet()) if (!installed.contains(pkg)) cache.remove(pkg);
         }

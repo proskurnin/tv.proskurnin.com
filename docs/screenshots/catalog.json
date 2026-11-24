@@ -22,7 +22,8 @@
     "movie_space": "семейный фильм про космос",
     "assistant_evening": "Что посмотреть вечером всей семьёй?",
     "remote_voice_space": "Найди семейный фильм про космос",
-    "keyboard_space": "космос"
+    "keyboard_space": "космос",
+    "movie_back_to_future": "Назад в будущее"
   },
   "commonMasks": [
     {
@@ -402,6 +403,36 @@
       "priority": "P3",
       "kind": "owner",
       "title": "Фото телевизора",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "local-watch-history",
+      "priority": "P3",
+      "kind": "owner",
+      "title": "История приложений — только синтетические записи; реальную историю не публиковать",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "movie-detail",
+      "priority": "P3",
+      "kind": "owner",
+      "title": "Большая карточка фильма — синтетический запрос movie_back_to_future",
+      "steps": [],
+      "expected": [],
+      "forbidden": [],
+      "masks": []
+    },
+    {
+      "id": "movie-services",
+      "priority": "P3",
+      "kind": "owner",
+      "title": "Все восемь кинотеатров — синтетический запрос movie_back_to_future",
       "steps": [],
       "expected": [],
       "forbidden": [],

@@ -4,9 +4,9 @@ from pathlib import Path
 import datetime,hashlib,io,json,os,re,shutil,subprocess,sys,tempfile,zipfile,xml.etree.ElementTree as ET
 ROOT=Path(__file__).resolve().parents[1]
 A='{http://schemas.android.com/apk/res/android}'
-SERVER=['portable_server.py','api_relay.py','us_api_worker.py','weather_gateway.py','tmdb_proxy.py','device_auth.py','movie_contract.py','chat_contract.py','transcription.py','dream_media.py','speed_probe.py']
+SERVER=['cinema_contract.py','portable_server.py','api_relay.py','us_api_worker.py','weather_gateway.py','tmdb_proxy.py','device_auth.py','movie_contract.py','chat_contract.py','transcription.py','dream_media.py','speed_probe.py']
 SCRIPTS=['package-universal.py','build-proskurnin-preview.py','build-proskurnin-remote.py','launcher_profiles.py','provision-universal.py','provision-xiaomi-preview-api.py','prepare-remote-tls.py','prepare-dream-catalog.py']
-TESTS=['test_device_auth.py','test_launcher_profiles.py','test_movie_contract.py','test_preview_provision.py','test_transcription.py','test_universal.py','ApiEndpointTest.java','HomeRoutePolicyTest.java','MiPressGestureTest.java','DeviceTelemetryTest.java','BannerShineStateTest.java','CurrencyConfigTest.java','BackgroundConfigTest.java']
+TESTS=['SberWakePolicyTest.java','CinemaEvidenceTest.java','CinemaMatchTest.java','LocalWatchPolicyTest.java','CinemaCardTest.java','test_cinema_contract.py','ConversationTurnTest.java','WatchPeriodTest.java','test_device_auth.py','test_launcher_profiles.py','test_movie_contract.py','test_preview_provision.py','test_transcription.py','test_universal.py','ApiEndpointTest.java','HomeRoutePolicyTest.java','MiPressGestureTest.java','DeviceTelemetryTest.java','BannerShineStateTest.java','CurrencyConfigTest.java','BackgroundConfigTest.java','StartupLoadPlanTest.java']
 
 def sha(data):return hashlib.sha256(data).hexdigest()
 def main():
@@ -34,6 +34,12 @@ def main():
         run([java/'java','-cp',tmp,'local.proskurnin.preview.CurrencyConfigTest'])
         run([java/'javac','-d',tmp,ROOT/'builds/proskurnin-preview-v1/app/src/local/proskurnin/preview/BackgroundConfig.java',ROOT/'tests/BackgroundConfigTest.java'])
         run([java/'java','-cp',tmp,'local.proskurnin.preview.BackgroundConfigTest'])
+        run([java/'javac','-d',tmp,ROOT/'builds/proskurnin-preview-v1/app/src/local/proskurnin/preview/StartupLoadPlan.java',ROOT/'tests/StartupLoadPlanTest.java'])
+        run([java/'java','-cp',tmp,'local.proskurnin.preview.StartupLoadPlanTest'])
+        for name,extra in [('SberWakePolicy',[]),('CinemaEvidence',[]),('CinemaMatch',['MovieIdentity']),('LocalWatchPolicy',[]),('CinemaCard',[]),('ConversationTurn',[]),('WatchPeriod',['MovieRecall'])]:
+            base=ROOT/'builds/proskurnin-preview-v1/app/src/local/proskurnin/preview'
+            run([java/'javac','-d',tmp,base/(name+'.java'),*[base/(x+'.java') for x in extra],ROOT/'tests'/(name+'Test.java')])
+            run([java/'java','-cp',tmp,'local.proskurnin.preview.'+name+'Test'])
     run(['node','--check',ROOT/'builds/proskurnin-remote-v1/app/assets/app.js'])
     run([sys.executable,'scripts/build-proskurnin-preview.py','--profile','universal'])
     run([sys.executable,'scripts/build-proskurnin-remote.py'])

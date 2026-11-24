@@ -59,7 +59,16 @@ def validate(body):
         seen.add(c['id']);clean.append(c)
     return body['query'].strip(),clean
 
-def verified(data,candidates):
+def metadata_matches(query,candidate):
+    q=query.casefold().replace('ё','е')
+    runtime=re.search(r'(?:до|не длиннее|не дольше|максимум)\s*(\d{1,3})\s*(?:минут|мин\b)',q)
+    if runtime and not 0<candidate['runtime']<=int(runtime[1]):return False
+    animated=any(g.casefold() in ('animation','мультфильм','анимация') for g in candidate['genres'])
+    if re.search(r'\b(?:не|без|никаких)\s+мульт\w*',q) and animated:return False
+    if re.search(r'\bтолько\s+мульт\w*',q) and not animated:return False
+    return True
+
+def verified(data,candidates,query=""):
     if not isinstance(data,dict) or not isinstance(data.get('matches'),list) or len(data['matches'])>12:raise ValueError('matches')
     catalog={c['id']:c for c in candidates};result=[];seen=set()
     for item in data['matches']:
@@ -68,6 +77,7 @@ def verified(data,candidates):
         if type(ident) is not int or ident not in catalog or ident in seen:raise ValueError('unknown id')
         if not isinstance(reason,str) or not 8<=len(reason)<=400 or not isinstance(evidence,str) or not 4<=len(evidence)<=600:raise ValueError('evidence')
         c=catalog[ident]
+        if not metadata_matches(query,c):continue
         if item['topic_role'] not in ('central','supporting','incidental'):raise ValueError('topic_role')
         if item['topic_role']!='central':continue
         if evidence not in c['overview'] and evidence not in c['keywords']:continue

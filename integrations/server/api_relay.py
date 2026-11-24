@@ -5,6 +5,7 @@ from movie_contract import validate as validate_movies
 import hashlib,hmac,json,time,urllib.request,urllib.error,urllib.parse
 from tmdb_proxy import Tmdb,TmdbError,InvalidRequest
 from chat_contract import validate_chat,validate_speech
+from cinema_contract import validate as validate_cinema
 from dream_media import resolve as dream_media
 from speed_probe import serve as speed_probe
 from pathlib import Path
@@ -49,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
             except InvalidRequest:self.reply(400,{'error':'invalid_parameters'})
             except TmdbError:self.reply(503,{'error':'tmdb_unavailable'})
             return
-        allowed={('POST','/tv-api/v1/ai/transcribe'):'/v1/ai/transcribe',('GET','/tv-api/v1/youtube/channel'):'/v1/youtube/channel',('POST','/tv-api/v1/ai/movies'):'/v1/ai/movies',('POST','/tv-api/v1/ai/chat'):'/v1/ai/chat',('POST','/tv-api/v1/ai/speech'):'/v1/ai/speech'}
+        allowed={('POST','/tv-api/v1/ai/cinema'):'/v1/ai/cinema',('POST','/tv-api/v1/ai/transcribe'):'/v1/ai/transcribe',('GET','/tv-api/v1/youtube/channel'):'/v1/youtube/channel',('POST','/tv-api/v1/ai/movies'):'/v1/ai/movies',('POST','/tv-api/v1/ai/chat'):'/v1/ai/chat',('POST','/tv-api/v1/ai/speech'):'/v1/ai/speech'}
         path=allowed.get((method,u.path))
         if path is None:self.reply(404,{'error':'unknown_api'});return
         try:
@@ -67,6 +68,7 @@ class Handler(BaseHTTPRequestHandler):
                 if path.endswith('/transcribe'):validate_audio(data)
                 elif path.endswith('/speech'):validate_speech(data)
                 elif path.endswith('/chat'):validate_chat(data)
+                elif path.endswith('/cinema'):validate_cinema(data)
                 else:validate_movies(data)
                 body=json.dumps(data).encode()
         except (ValueError,TypeError):self.reply(400,{'error':'invalid_parameters'});return
